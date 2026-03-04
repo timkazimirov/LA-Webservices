@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Globe, Code2, Paintbrush, Rocket, Languages, Infinity, DollarSign, Server,
-  ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette
+  ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus
 } from "lucide-react";
 
 const services = [
@@ -97,52 +97,62 @@ const testimonials = [
 const pricingPlans = [
   {
     name: "Starter",
-    price: "$1,500",
-    period: "one-time + $49/mo hosting",
+    price: "$1,000",
+    period: "one-time + $95/mo hosting & maintenance",
     description: "Perfect for small businesses getting online",
     features: [
-      "Up to 5 pages",
+      "Custom designed website",
       "Mobile responsive design",
       "English or Spanish",
-      "Contact form",
+      "Contact form & lead capture",
       "Basic SEO setup",
-      "Managed hosting",
-      "30 days of edits",
+      "Managed hosting included",
+      "Ongoing maintenance",
+      "Content updates",
     ],
   },
   {
-    name: "Growth",
-    price: "$4,500",
-    period: "one-time + $79/mo hosting",
-    description: "For businesses ready to scale online",
+    name: "Monthly",
+    price: "$0",
+    period: "upfront — $299/mo hosting & maintenance",
+    description: "No upfront cost, everything included monthly",
     features: [
-      "Up to 15 pages",
+      "Custom designed website",
+      "Mobile responsive design",
       "Bilingual (EN + ES)",
       "Custom widgets",
-      "Analytics dashboard",
-      "Advanced SEO",
-      "Managed hosting",
+      "SEO optimization",
+      "Managed hosting included",
       "Unlimited edits",
       "Priority support",
     ],
     popular: true,
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    period: "tailored to your needs",
-    description: "Full-scale web platform for larger operations",
+    name: "Custom",
+    price: "Let's Talk",
+    period: "tailored to your project",
+    description: "For businesses with specific needs and goals",
     features: [
-      "Unlimited pages",
+      "Fully custom build",
       "Bilingual (EN + ES)",
-      "Custom integrations",
+      "Custom integrations & APIs",
       "E-commerce ready",
       "Custom native elements",
       "Dedicated hosting",
       "Unlimited edits",
-      "24/7 support",
+      "Dedicated support",
     ],
   },
+];
+
+const upgrades = [
+  { name: "Bilingual Add-on", description: "Add full Spanish or English translation to your existing site", price: "+$300 one-time" },
+  { name: "E-commerce Integration", description: "Online store with product listings, cart, and payment processing", price: "+$500 one-time" },
+  { name: "Custom Booking System", description: "Appointment scheduling and reservation management", price: "+$400 one-time" },
+  { name: "Analytics Dashboard", description: "Real-time visitor tracking, traffic reports, and performance insights", price: "+$150 one-time" },
+  { name: "Custom Widgets", description: "Interactive calculators, configurators, or specialized tools", price: "From $200" },
+  { name: "Logo & Brand Design", description: "Professional logo and brand identity package", price: "+$350 one-time" },
 ];
 
 export default function LandingPage() {
@@ -369,12 +379,37 @@ export default function LandingPage() {
                       variant={plan.popular ? "default" : "secondary"}
                       data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     >
-                      Get Started <ChevronRight className="w-3 h-3 ml-1" />
+                      {plan.name === "Custom" ? "Contact Us" : "Get Started"} <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          <div className="mt-16">
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-bold mb-2">Available Upgrades</h3>
+              <p className="text-sm text-muted-foreground">Add these to any plan to extend your site's capabilities</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {upgrades.map((upgrade) => (
+                <Card key={upgrade.name}>
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Plus className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-medium text-sm">{upgrade.name}</h4>
+                        <Badge variant="secondary" className="shrink-0 text-[11px] no-default-active-elevate">{upgrade.price}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{upgrade.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
