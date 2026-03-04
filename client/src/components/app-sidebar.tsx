@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 
 const adminItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Contracts", url: "/contracts", icon: FileText },
@@ -21,7 +21,7 @@ const adminItems = [
 ];
 
 const clientItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Projects", url: "/projects", icon: FolderKanban },
   { title: "Contracts", url: "/contracts", icon: FileText },
   { title: "Invoices", url: "/invoices", icon: Receipt },
@@ -42,7 +42,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/">
+        <Link href="/dashboard">
           <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home">
             <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
               <Globe className="w-4 h-4 text-primary-foreground" />
@@ -60,7 +60,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const isActive = location === item.url || (item.url !== "/" && location.startsWith(item.url));
+                const isActive = location === item.url || (item.url !== "/dashboard" && location.startsWith(item.url));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild data-active={isActive}>

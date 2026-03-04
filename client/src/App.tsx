@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
+import LandingPage from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ClientsPage from "@/pages/clients";
 import ProjectsPage from "@/pages/projects";
@@ -35,8 +36,9 @@ function AuthenticatedLayout() {
           </header>
           <main className="flex-1 overflow-auto">
             <Switch>
-              <Route path="/" component={Dashboard} />
-              <Route path="/login">{() => <Redirect to="/" />}</Route>
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/login">{() => <Redirect to="/dashboard" />}</Route>
+              <Route path="/">{() => <Redirect to="/dashboard" />}</Route>
               {isAdmin && <Route path="/clients" component={ClientsPage} />}
               <Route path="/projects" component={ProjectsPage} />
               <Route path="/contracts" component={ContractsPage} />
@@ -70,8 +72,9 @@ function AppRouter() {
   if (!isAuthenticated) {
     return (
       <Switch>
+        <Route path="/" component={LandingPage} />
         <Route path="/login" component={LoginPage} />
-        <Route>{() => <Redirect to="/login" />}</Route>
+        <Route>{() => <Redirect to="/" />}</Route>
       </Switch>
     );
   }

@@ -12,9 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Receipt, Search, CreditCard, CheckCircle2 } from "lucide-react";
+import { Plus, Receipt, Search, CreditCard, CheckCircle2, DollarSign, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { StripePaymentDialog } from "@/components/stripe-payment";
 import type { Invoice, Project, User } from "@shared/schema";
 
 type SafeUser = Omit<User, "password">;
@@ -29,17 +30,18 @@ const invoiceSchema = z.object({
   description: z.string().optional(),
 });
 
-const statusColor: Record<string, string> = {
-  pending: "bg-chart-4/10 text-chart-4 dark:bg-chart-4/20",
-  paid: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20",
-  overdue: "bg-destructive/10 text-destructive",
-  cancelled: "bg-muted text-muted-foreground",
+const statusConfig: Record<string, { color: string; icon: typeof CheckCircle2 }> = {
+  pending: { color: "bg-chart-4/10 text-chart-4 dark:bg-chart-4/20", icon: Clock },
+  paid: { color: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20", icon: CheckCircle2 },
+  overdue: { color: "bg-destructive/10 text-destructive", icon: AlertTriangle },
+  cancelled: { color: "bg-muted text-muted-foreground", icon: Receipt },
 };
 
 export default function InvoicesPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -74,21 +76,6 @@ export default function InvoicesPage() {
     },
   });
 
-  const payMutation = useMutation({
-    mutationFn: async (invoiceId: string) => {
-      const res = await apiRequest("POST", `/api/invoices/${invoiceId}/pay`);
-      return res.json();
-    },
-    onSuccess: async (data, invoiceId) => {
-      await apiRequest("POST", `/api/invoices/${invoiceId}/confirm-payment`);
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      toast({ title: "Payment processed successfully" });
-    },
-    onError: (err: any) => {
-      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
-    },
-  });
-
   const markPaidMutation = useMutation({
     mutationFn: async (invoiceId: string) => {
       const res = await apiRequest("PATCH", `/api/invoices/${invoiceId}`, {
@@ -108,6 +95,9 @@ export default function InvoicesPage() {
     const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const totalPending = invoicesList?.filter(i => i.status === "pending").reduce((sum, i) => sum + parseFloat(i.amount), 0) || 0;
+  const totalPaid = invoicesList?.filter(i => i.status === "paid").reduce((sum, i) => sum + parseFloat(i.amount), 0) || 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -170,6 +160,42 @@ export default function InvoicesPage() {
         )}
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Receipt className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Total Invoices</p>
+              <p className="text-lg font-bold" data-testid="text-total-invoices">{invoicesList?.length || 0}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-chart-4" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Pending</p>
+              <p className="text-lg font-bold" data-testid="text-pending-amount">${totalPending.toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-chart-2" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Paid</p>
+              <p className="text-lg font-bold" data-testid="text-paid-amount">${totalPaid.toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -194,51 +220,54 @@ export default function InvoicesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered?.map((invoice) => (
-            <Card key={invoice.id} data-testid={`card-invoice-${invoice.id}`}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded-md bg-secondary flex items-center justify-center shrink-0">
-                      <Receipt className="w-4 h-4 text-secondary-foreground" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{invoice.description || "Invoice"}</p>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                        {invoice.dueDate && <span>Due {new Date(invoice.dueDate).toLocaleDateString()}</span>}
-                        {invoice.paidAt && <span>Paid {new Date(invoice.paidAt).toLocaleDateString()}</span>}
+          {filtered?.map((invoice) => {
+            const config = statusConfig[invoice.status] || statusConfig.pending;
+            const StatusIcon = config.icon;
+            return (
+              <Card key={invoice.id} data-testid={`card-invoice-${invoice.id}`}>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-9 h-9 rounded-md bg-secondary flex items-center justify-center shrink-0">
+                        <StatusIcon className="w-4 h-4 text-secondary-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{invoice.description || "Invoice"}</p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+                          {invoice.dueDate && <span>Due {new Date(invoice.dueDate).toLocaleDateString()}</span>}
+                          {invoice.paidAt && <span>Paid {new Date(invoice.paidAt).toLocaleDateString()}</span>}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-base font-bold" data-testid={`text-amount-${invoice.id}`}>${parseFloat(invoice.amount).toLocaleString()}</span>
+                      <Badge variant="secondary" className={config.color} data-testid={`badge-status-${invoice.id}`}>{invoice.status}</Badge>
+                      {invoice.status === "pending" && !isAdmin && (
+                        <Button
+                          size="sm"
+                          onClick={() => setPayingInvoice(invoice)}
+                          data-testid={`button-pay-${invoice.id}`}
+                        >
+                          <CreditCard className="w-3 h-3 mr-1" />Pay Now
+                        </Button>
+                      )}
+                      {invoice.status === "pending" && isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => markPaidMutation.mutate(invoice.id)}
+                          disabled={markPaidMutation.isPending}
+                          data-testid={`button-mark-paid-${invoice.id}`}
+                        >
+                          <CheckCircle2 className="w-3 h-3 mr-1" />Mark Paid
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-base font-bold">${parseFloat(invoice.amount).toLocaleString()}</span>
-                    <Badge variant="secondary" className={statusColor[invoice.status] || ""}>{invoice.status}</Badge>
-                    {invoice.status === "pending" && !isAdmin && (
-                      <Button
-                        size="sm"
-                        onClick={() => payMutation.mutate(invoice.id)}
-                        disabled={payMutation.isPending}
-                        data-testid={`button-pay-${invoice.id}`}
-                      >
-                        <CreditCard className="w-3 h-3 mr-1" />Pay
-                      </Button>
-                    )}
-                    {invoice.status === "pending" && isAdmin && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => markPaidMutation.mutate(invoice.id)}
-                        disabled={markPaidMutation.isPending}
-                        data-testid={`button-mark-paid-${invoice.id}`}
-                      >
-                        <CheckCircle2 className="w-3 h-3 mr-1" />Mark Paid
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
           {filtered?.length === 0 && (
             <div className="text-center py-12">
               <Receipt className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -247,6 +276,23 @@ export default function InvoicesPage() {
           )}
         </div>
       )}
+
+      <Dialog open={!!payingInvoice} onOpenChange={(v) => !v && setPayingInvoice(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pay Invoice</DialogTitle>
+          </DialogHeader>
+          {payingInvoice && (
+            <StripePaymentDialog
+              invoiceId={payingInvoice.id}
+              amount={payingInvoice.amount}
+              description={payingInvoice.description || "Invoice Payment"}
+              onSuccess={() => setPayingInvoice(null)}
+              onCancel={() => setPayingInvoice(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
