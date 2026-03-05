@@ -1,4 +1,4 @@
-# WebForge Studio
+# LA Webservices
 
 A professional website agency management platform for managing clients, projects, contracts, invoices/payments, messaging, and website analytics.
 
@@ -36,7 +36,7 @@ A professional website agency management platform for managing clients, projects
 - `server/auth.ts` - Passport.js authentication setup
 - `server/routes.ts` - All API endpoints
 - `server/storage.ts` - Database operations layer
-- `server/seed.ts` - Seed data for demo
+- `server/seed.ts` - Creates admin account on first run
 - `server/db.ts` - Database connection
 - `client/src/App.tsx` - Main app with routing (landing page for public, dashboard layout for auth)
 - `client/src/components/app-sidebar.tsx` - Navigation sidebar
@@ -45,12 +45,10 @@ A professional website agency management platform for managing clients, projects
 - `client/src/pages/landing.tsx` - Public marketing landing page
 - `client/src/pages/` - All page components
 
-## Demo Accounts
+## Admin Account
 
-- Admin: `admin` / `admin123`
-- Client: `sarah.chen` / `client123`
-- Client: `james.rivera` / `client123`
-- Client: `emma.wilson` / `client123`
+- Username: `admin`
+- Password set via seed on first run
 
 ## Stripe Integration
 
@@ -60,4 +58,8 @@ Stripe is used for processing invoice payments via Stripe Elements (PaymentEleme
 
 Flow: Client clicks "Pay Now" on invoice -> PaymentIntent created server-side -> Stripe Elements form rendered -> Payment confirmed -> Invoice marked paid
 
-Note: Stripe was set up via manual API key entry (not Replit integration). If issues arise, keys may need to be updated in Replit Secrets.
+## Branding
+
+- Name: LA Webservices
+- Logo: attached_assets/la-webservices-logo.png
+- Used across landing page, sidebar, login page, and footer

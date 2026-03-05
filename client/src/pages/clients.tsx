@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Mail, Phone, Building2 } from "lucide-react";
+import { Plus, Search, Mail, Phone, Building2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
 

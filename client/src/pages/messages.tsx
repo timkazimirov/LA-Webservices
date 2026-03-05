@@ -105,7 +105,7 @@ export default function MessagesPage() {
       const lastMsg = msgs.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
       contactList.push({
         id,
-        name: "WebForge Team",
+        name: "LA Webservices",
         lastMessage: lastMsg?.content,
         unreadCount: unread,
       });
@@ -132,7 +132,7 @@ export default function MessagesPage() {
         <div className="mb-4">
           <h1 className="text-2xl font-bold" data-testid="text-page-title">Messages</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isAdmin ? "Communicate with your clients" : "Send messages to the WebForge team"}
+            {isAdmin ? "Communicate with your clients" : "Send messages to the LA Webservices team"}
           </p>
         </div>
 

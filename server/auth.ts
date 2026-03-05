@@ -36,7 +36,7 @@ export function setupAuth(app: Express) {
   const PgStore = connectPgSimple(session);
 
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "webforge-secret-key-change-in-production",
+    secret: process.env.SESSION_SECRET || "la-webservices-secret-key",
     resave: false,
     saveUninitialized: false,
     store: new PgStore({

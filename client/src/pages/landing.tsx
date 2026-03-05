@@ -6,6 +6,7 @@ import {
   Globe, Code2, Paintbrush, Rocket, Languages, Infinity, DollarSign, Server,
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus
 } from "lucide-react";
+import logoPath from "@assets/la-webservices-logo.png";
 
 const services = [
   {
@@ -75,21 +76,21 @@ const differentiators = [
 
 const testimonials = [
   {
-    name: "Sarah Chen",
-    company: "Bloom Floral Co.",
-    text: "They redesigned our entire online shop and our conversion rate doubled in the first month. The bilingual support was exactly what we needed to reach our Spanish-speaking customers.",
+    name: "Maria G.",
+    company: "Local Restaurant Owner",
+    text: "They built our bilingual website and online ordering system. Our Spanish-speaking customers finally feel at home, and our orders went up 40% in the first month.",
     rating: 5,
   },
   {
-    name: "James Rivera",
-    company: "NorthPeak Outdoors",
-    text: "Working with a local team that actually picks up the phone makes all the difference. Our booking platform handles thousands of reservations and has never gone down.",
+    name: "David R.",
+    company: "Home Services Business",
+    text: "Working with a local team that actually picks up the phone makes all the difference. They built us a booking system that handles everything and the site has never gone down.",
     rating: 5,
   },
   {
-    name: "Emma Wilson",
-    company: "Artisan Bake House",
-    text: "The custom ordering system they built for us replaced three different tools we were paying for. Simple, clean, and our customers love it.",
+    name: "Lisa M.",
+    company: "Boutique Shop Owner",
+    text: "The custom storefront they built for us replaced three different tools we were paying for. Simple, clean, and our customers love it. Best investment we made.",
     rating: 5,
   },
 ];
@@ -162,12 +163,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer" data-testid="link-landing-logo">
-              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-                <Globe className="w-4 h-4 text-primary-foreground" />
-              </div>
+              <img src={logoPath} alt="LA Webservices" className="w-8 h-8 rounded-md object-contain" />
               <div>
-                <span className="font-bold text-sm tracking-tight">WebForge</span>
-                <span className="text-[10px] text-muted-foreground ml-1 tracking-widest uppercase">Studio</span>
+                <span className="font-bold text-sm tracking-tight">LA</span>
+                <span className="text-[10px] text-muted-foreground ml-1 tracking-widest uppercase">Webservices</span>
               </div>
             </div>
           </Link>
@@ -462,10 +461,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-                <Globe className="w-3.5 h-3.5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-sm">WebForge Studio</span>
+              <img src={logoPath} alt="LA Webservices" className="w-7 h-7 rounded-md object-contain" />
+              <span className="font-bold text-sm">LA Webservices</span>
             </div>
             <p className="text-xs text-muted-foreground">
               Built with care by a small team that loves the web.

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Globe } from "lucide-react";
+import logoPath from "@assets/la-webservices-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,12 +61,10 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:flex-1 bg-primary/5 items-center justify-center p-12">
         <div className="max-w-md">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
-              <Globe className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img src={logoPath} alt="LA Webservices" className="w-12 h-12 rounded-lg object-contain" />
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">WebForge</h1>
-              <p className="text-xs text-muted-foreground tracking-widest uppercase">Studio</p>
+              <h1 className="text-2xl font-bold tracking-tight">LA</h1>
+              <p className="text-xs text-muted-foreground tracking-widest uppercase">Webservices</p>
             </div>
           </div>
           <h2 className="text-3xl font-bold mb-4">Build better websites, together.</h2>
@@ -90,10 +88,8 @@ export default function LoginPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2 lg:hidden">
-              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-                <Globe className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <span className="font-bold">WebForge</span>
+              <img src={logoPath} alt="LA Webservices" className="w-8 h-8 rounded-md object-contain" />
+              <span className="font-bold">LA Webservices</span>
             </div>
             <CardTitle>Welcome back</CardTitle>
             <CardDescription>Sign in to your account or create a new one</CardDescription>
@@ -127,11 +123,6 @@ export default function LoginPage() {
                     </Button>
                   </form>
                 </Form>
-                <div className="mt-4 p-3 rounded-md bg-muted/50 text-xs text-muted-foreground">
-                  <p className="font-medium mb-1">Demo accounts:</p>
-                  <p>Admin: <span className="font-mono">admin</span> / <span className="font-mono">admin123</span></p>
-                  <p>Client: <span className="font-mono">sarah.chen</span> / <span className="font-mono">client123</span></p>
-                </div>
               </TabsContent>
 
               <TabsContent value="register">
