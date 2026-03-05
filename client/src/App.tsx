@@ -76,13 +76,19 @@ function AppRouter() {
     return (
       <Switch>
         <Route path="/" component={LandingPage} />
+        <Route path="/home" component={LandingPage} />
         <Route path="/login" component={LoginPage} />
         <Route>{() => <Redirect to="/" />}</Route>
       </Switch>
     );
   }
 
-  return <AuthenticatedLayout />;
+  return (
+    <Switch>
+      <Route path="/home" component={LandingPage} />
+      <Route><AuthenticatedLayout /></Route>
+    </Switch>
+  );
 }
 
 function App() {

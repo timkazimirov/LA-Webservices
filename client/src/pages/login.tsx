@@ -71,16 +71,9 @@ export default function LoginPage() {
           <p className="text-muted-foreground text-lg leading-relaxed">
             Manage your web projects, track progress, handle contracts and payments - all in one place.
           </p>
-          <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-background/60 border border-border/50">
-              <p className="text-2xl font-bold text-primary">150+</p>
-              <p className="text-sm text-muted-foreground">Projects delivered</p>
-            </div>
-            <div className="p-4 rounded-lg bg-background/60 border border-border/50">
-              <p className="text-2xl font-bold text-primary">98%</p>
-              <p className="text-sm text-muted-foreground">Client satisfaction</p>
-            </div>
-          </div>
+          <a href="/" className="inline-flex items-center gap-2 mt-6 text-sm text-primary hover:underline" data-testid="link-back-landing">
+            &larr; Back to homepage
+          </a>
         </div>
       </div>
 
@@ -91,6 +84,7 @@ export default function LoginPage() {
               <img src={logoPath} alt="LA Webservices" className="w-8 h-8 rounded-md object-contain" />
               <span className="font-bold">LA Webservices</span>
             </div>
+            <a href="/" className="text-xs text-primary hover:underline lg:hidden mb-2 inline-block" data-testid="link-back-landing-mobile">&larr; Back to homepage</a>
             <CardTitle>Welcome back</CardTitle>
             <CardDescription>Sign in to your account or create a new one</CardDescription>
           </CardHeader>

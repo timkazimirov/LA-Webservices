@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut, ClipboardList,
+  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut, ClipboardList, Globe,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -102,6 +102,14 @@ export function AppSidebar() {
             <p className="text-[11px] text-muted-foreground truncate">{user?.company || user?.email}</p>
           </div>
         </div>
+        <a
+          href="/home"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors"
+          data-testid="link-landing-page"
+        >
+          <Globe className="w-4 h-4" />
+          Visit Website
+        </a>
         <Button
           variant="ghost"
           size="sm"
