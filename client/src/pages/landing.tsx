@@ -163,7 +163,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer" data-testid="link-landing-logo">
-              <img src={logoPath} alt="LA Webservices" className="w-10 h-10 rounded-md object-contain" />
+              <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
+              </div>
               <div>
                 <span className="font-bold text-sm tracking-tight">LA</span>
                 <span className="text-[10px] text-muted-foreground ml-1 tracking-widest uppercase">Webservices</span>
@@ -461,7 +463,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <img src={logoPath} alt="LA Webservices" className="w-10 h-10 rounded-md object-contain" />
+              <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
+              </div>
               <span className="font-bold text-sm">LA Webservices</span>
             </div>
             <p className="text-xs text-muted-foreground">

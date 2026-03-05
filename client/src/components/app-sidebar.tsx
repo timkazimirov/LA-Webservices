@@ -45,7 +45,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard">
           <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home">
-            <img src={logoPath} alt="LA Webservices" className="w-10 h-10 rounded-md object-contain" />
+            <img src={logoPath} alt="LA Webservices" className="w-10 h-10 rounded-md object-cover scale-[1.8]" />
             <div>
               <h1 className="text-sm font-semibold tracking-tight">LA</h1>
               <p className="text-[10px] text-muted-foreground tracking-wide uppercase">Webservices</p>
