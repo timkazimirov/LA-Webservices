@@ -375,21 +375,19 @@ export default function InvoicesPage() {
       )}
 
       <Dialog open={!!payingInvoice} onOpenChange={(v) => !v && setPayingInvoice(null)}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
-          <DialogHeader className="shrink-0">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle>Pay Invoice</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-4">
-            {payingInvoice && (
-              <StripePaymentDialog
-                invoiceId={payingInvoice.id}
-                amount={payingInvoice.amount}
-                description={payingInvoice.description || "Invoice Payment"}
-                onSuccess={() => setPayingInvoice(null)}
-                onCancel={() => setPayingInvoice(null)}
-              />
-            )}
-          </ScrollArea>
+          {payingInvoice && (
+            <StripePaymentDialog
+              invoiceId={payingInvoice.id}
+              amount={payingInvoice.amount}
+              description={payingInvoice.description || "Invoice Payment"}
+              onSuccess={() => setPayingInvoice(null)}
+              onCancel={() => setPayingInvoice(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
