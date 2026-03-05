@@ -279,9 +279,7 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ASAP">ASAP</SelectItem>
-                <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
-                <SelectItem value="1 month">1 month</SelectItem>
-                <SelectItem value="2-3 months">2-3 months</SelectItem>
+                <SelectItem value="Within a week">Within a week</SelectItem>
                 <SelectItem value="Flexible">Flexible</SelectItem>
               </SelectContent>
             </Select>

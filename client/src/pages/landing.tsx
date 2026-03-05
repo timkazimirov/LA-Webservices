@@ -217,7 +217,7 @@ const faqs = [
   },
   {
     question: "How long does it take to build a website?",
-    answer: "Most standard websites are completed within 2-4 weeks. Custom projects with advanced features may take 4-8 weeks. We provide regular updates throughout the process and you can communicate directly with your development team.",
+    answer: "Most websites are delivered within a week. Custom projects with advanced features may take a bit longer depending on scope. We provide regular updates throughout the process and you can communicate directly with your development team.",
   },
   {
     question: "Do you provide website hosting?",
@@ -271,6 +271,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6 text-sm">
             <a href="#services" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-services">Services</a>
             <a href="#why-us" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-why">Why Us</a>
+            <a href="#our-work" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-work">Our Work</a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-pricing">Pricing</a>
             <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-testimonials">Testimonials</a>
             <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-faq">FAQ</a>
@@ -452,6 +453,98 @@ export default function LandingPage() {
               ))}
             </StaggerGrid>
           </div>
+        </div>
+      </section>
+
+      <section id="our-work" className="py-20 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn className="text-center mb-14">
+            <Badge variant="secondary" className="mb-4 no-default-active-elevate">Our Work</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Projects we've built</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Real websites for real businesses. Every project is custom-built to match the client's brand and goals.
+            </p>
+          </FadeIn>
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
+              <div className="h-44 bg-gradient-to-br from-primary/10 to-chart-2/10 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
+                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 rounded bg-primary/20 w-2/3" />
+                    <div className="h-2 rounded bg-muted w-full" />
+                    <div className="h-2 rounded bg-muted w-4/5" />
+                    <div className="h-5 rounded bg-primary/15 w-1/4 mt-2" />
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-5">
+                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Construction</Badge>
+                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-1">JCBB Construction</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Bilingual company website with project gallery, service pages, and lead capture form. Built to drive local SEO in Los Angeles.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
+              <div className="h-44 bg-gradient-to-br from-chart-2/10 to-chart-3/10 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
+                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 rounded bg-chart-2/20 w-1/2" />
+                    <div className="flex gap-1">
+                      <div className="h-6 rounded bg-muted w-1/3" />
+                      <div className="h-6 rounded bg-muted w-1/3" />
+                      <div className="h-6 rounded bg-muted w-1/3" />
+                    </div>
+                    <div className="h-2 rounded bg-muted w-full" />
+                    <div className="h-5 rounded bg-chart-2/15 w-1/3 mt-1" />
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-5">
+                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Restaurant</Badge>
+                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-2">Sabor Latino Kitchen</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Full bilingual restaurant site with online menu, ordering integration, and reservation system. English and Spanish content throughout.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
+              <div className="h-44 bg-gradient-to-br from-chart-4/10 to-primary/10 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
+                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
+                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 rounded bg-chart-4/20 w-3/4" />
+                    <div className="h-2 rounded bg-muted w-full" />
+                    <div className="flex gap-1 mt-1">
+                      <div className="h-8 rounded bg-chart-4/10 flex-1" />
+                      <div className="h-8 rounded bg-primary/10 flex-1" />
+                    </div>
+                    <div className="h-2 rounded bg-muted w-2/3" />
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-5">
+                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Home Services</Badge>
+                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-3">Pacific Plumbing Co.</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Service-focused website with online booking, service area maps, and customer review integration. Optimized for local search rankings.</p>
+              </CardContent>
+            </Card>
+          </StaggerGrid>
         </div>
       </section>
 
