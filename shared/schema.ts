@@ -13,6 +13,9 @@ export const users = pgTable("users", {
   company: text("company"),
   phone: text("phone"),
   avatarUrl: text("avatar_url"),
+  clientStage: text("client_stage").default("potential"),
+  websiteUrl: text("website_url"),
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -73,12 +76,25 @@ export const analyticsSnapshots = pgTable("analytics_snapshots", {
   date: date("date").notNull(),
 });
 
+export const projectRequests = pgTable("project_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientId: varchar("client_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  budget: text("budget"),
+  timeline: text("timeline"),
+  status: text("status").notNull().default("pending"),
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
 export const insertContractSchema = createInsertSchema(contracts).omit({ id: true, createdAt: true, signedAt: true });
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAt: true, stripePaymentIntentId: true, stripeInvoiceUrl: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true, read: true });
 export const insertAnalyticsSchema = createInsertSchema(analyticsSnapshots).omit({ id: true });
+export const insertProjectRequestSchema = createInsertSchema(projectRequests).omit({ id: true, createdAt: true, status: true, adminNotes: true });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -92,6 +108,8 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type AnalyticsSnapshot = typeof analyticsSnapshots.$inferSelect;
 export type InsertAnalyticsSnapshot = z.infer<typeof insertAnalyticsSchema>;
+export type ProjectRequest = typeof projectRequests.$inferSelect;
+export type InsertProjectRequest = z.infer<typeof insertProjectRequestSchema>;
 
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),

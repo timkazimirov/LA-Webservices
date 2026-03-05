@@ -1,10 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, FolderKanban, FileText, DollarSign, TrendingUp, Receipt, CheckCircle2, Clock } from "lucide-react";
-import type { Project, Invoice, Contract } from "@shared/schema";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Link } from "wouter";
+import { Users, FolderKanban, FileText, DollarSign, TrendingUp, Receipt, CheckCircle2, Clock, Plus, MessageSquare, ExternalLink } from "lucide-react";
+import type { Project, Invoice, Contract, ProjectRequest } from "@shared/schema";
 
 function StatCard({ title, value, icon: Icon, description, color }: {
   title: string; value: string | number; icon: any; description?: string; color?: string;
@@ -128,13 +137,117 @@ function AdminDashboard() {
   );
 }
 
+function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [budget, setBudget] = useState("");
+  const [timeline, setTimeline] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: async (data: { title: string; description: string; budget: string; timeline: string }) => {
+      await apiRequest("POST", "/api/project-requests", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-requests"] });
+      setTitle("");
+      setDescription("");
+      setBudget("");
+      setTimeline("");
+      onOpenChange(false);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !description.trim()) return;
+    mutation.mutate({ title, description, budget, timeline });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Request a Project</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="req-title">Title</Label>
+            <Input
+              id="req-title"
+              data-testid="input-request-title"
+              placeholder="Project title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="req-description">Description</Label>
+            <Textarea
+              id="req-description"
+              data-testid="input-request-description"
+              placeholder="Describe your project needs..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Budget Range</Label>
+            <Select value={budget} onValueChange={setBudget}>
+              <SelectTrigger data-testid="select-request-budget">
+                <SelectValue placeholder="Select budget range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Under $1,000">Under $1,000</SelectItem>
+                <SelectItem value="$1,000-$3,000">$1,000-$3,000</SelectItem>
+                <SelectItem value="$3,000-$5,000">$3,000-$5,000</SelectItem>
+                <SelectItem value="$5,000+">$5,000+</SelectItem>
+                <SelectItem value="Not sure yet">Not sure yet</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Timeline</Label>
+            <Select value={timeline} onValueChange={setTimeline}>
+              <SelectTrigger data-testid="select-request-timeline">
+                <SelectValue placeholder="Select timeline" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ASAP">ASAP</SelectItem>
+                <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
+                <SelectItem value="1 month">1 month</SelectItem>
+                <SelectItem value="2-3 months">2-3 months</SelectItem>
+                <SelectItem value="Flexible">Flexible</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={mutation.isPending || !title.trim() || !description.trim()}
+            data-testid="button-submit-request"
+          >
+            {mutation.isPending ? "Submitting..." : "Submit Request"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ClientDashboard() {
+  const { user } = useAuth();
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+
   const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({ queryKey: ["/api/projects"] });
   const { data: invoicesList } = useQuery<Invoice[]>({ queryKey: ["/api/invoices"] });
   const { data: contractsList } = useQuery<Contract[]>({ queryKey: ["/api/contracts"] });
+  const { data: projectRequests } = useQuery<ProjectRequest[]>({ queryKey: ["/api/project-requests"] });
 
   const totalPaid = invoicesList?.filter(i => i.status === "paid").reduce((s, i) => s + parseFloat(i.amount), 0) || 0;
   const totalPending = invoicesList?.filter(i => i.status === "pending").reduce((s, i) => s + parseFloat(i.amount), 0) || 0;
+  const pendingInvoices = invoicesList?.filter(i => i.status === "pending") || [];
 
   if (projectsLoading) {
     return (
@@ -146,42 +259,176 @@ function ClientDashboard() {
     );
   }
 
-  const activeProjects = projects?.filter(p => p.status === "in-progress" || p.status === "active").length || 0;
+  const activeProjects = projects?.filter(p => p.status === "in-progress" || p.status === "active") || [];
+
+  const requestStatusColor: Record<string, string> = {
+    pending: "bg-chart-4/10 text-chart-4 dark:bg-chart-4/20",
+    approved: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20",
+    rejected: "bg-destructive/10 text-destructive",
+  };
+
+  const projectStatusColor: Record<string, string> = {
+    "in-progress": "bg-chart-4/10 text-chart-4 dark:bg-chart-4/20",
+    active: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20",
+    completed: "bg-primary/10 text-primary",
+    paused: "bg-muted text-muted-foreground",
+  };
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" data-testid="text-page-title">My Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Track your project progress and account overview</p>
+      <ProjectRequestDialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen} />
+
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold" data-testid="text-page-title">
+            Welcome back, {user?.fullName}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1" data-testid="text-page-subtitle">
+            Here's what's happening with your projects
+          </p>
+        </div>
+        <Button onClick={() => setRequestDialogOpen(true)} data-testid="button-request-project">
+          <Plus className="w-4 h-4 mr-2" />
+          Request a Project
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Active Projects" value={activeProjects} icon={FolderKanban} description={`${projects?.length || 0} total`} color="bg-primary/10 text-primary" />
+        <StatCard title="Active Projects" value={activeProjects.length} icon={FolderKanban} description={`${projects?.length || 0} total`} color="bg-primary/10 text-primary" />
         <StatCard title="Total Paid" value={`$${totalPaid.toLocaleString()}`} icon={CheckCircle2} color="bg-chart-2/10 text-chart-2 dark:bg-chart-2/20" />
         <StatCard title="Pending" value={`$${totalPending.toLocaleString()}`} icon={Clock} color="bg-chart-4/10 text-chart-4 dark:bg-chart-4/20" />
         <StatCard title="Contracts" value={contractsList?.length || 0} icon={FileText} color="bg-chart-3/10 text-chart-3 dark:bg-chart-3/20" />
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Your Projects</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {projects?.map((project) => (
-            <div key={project.id} className="flex items-center justify-between gap-2 py-3 border-b border-border/50 last:border-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{project.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{project.description}</p>
-                {project.domain && <p className="text-xs text-primary mt-1">{project.domain}</p>}
-              </div>
-              <Badge variant="secondary">{project.status}</Badge>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="hover-elevate cursor-pointer" onClick={() => setRequestDialogOpen(true)} data-testid="card-quick-request">
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+              <Plus className="w-4 h-4" />
             </div>
-          ))}
-          {(!projects || projects.length === 0) && (
-            <p className="text-sm text-muted-foreground text-center py-4">No projects assigned yet</p>
-          )}
-        </CardContent>
-      </Card>
+            <div>
+              <p className="text-sm font-medium">Request Project</p>
+              <p className="text-xs text-muted-foreground">Start a new project</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Link href="/messages" data-testid="link-quick-messages">
+          <Card className="hover-elevate cursor-pointer">
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-chart-4/10 text-chart-4 dark:bg-chart-4/20">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Send Message</p>
+                <p className="text-xs text-muted-foreground">Chat with your team</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/invoices" data-testid="link-quick-invoices">
+          <Card className="hover-elevate cursor-pointer">
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-chart-2/10 text-chart-2 dark:bg-chart-2/20">
+                <Receipt className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">View Invoices</p>
+                <p className="text-xs text-muted-foreground">Manage payments</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {projectRequests && projectRequests.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Project Requests</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {projectRequests.map((req) => (
+              <div key={req.id} className="flex items-center justify-between gap-2 py-3 border-b border-border/50 last:border-0" data-testid={`card-request-${req.id}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium" data-testid={`text-request-title-${req.id}`}>{req.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{req.description}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {req.budget && <span className="text-xs text-muted-foreground">{req.budget}</span>}
+                    {req.timeline && <span className="text-xs text-muted-foreground">{req.timeline}</span>}
+                  </div>
+                </div>
+                <Badge variant="secondary" className={requestStatusColor[req.status] || ""} data-testid={`badge-request-status-${req.id}`}>
+                  {req.status}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Active Projects</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {projects?.map((project) => (
+              <div key={project.id} className="flex items-center justify-between gap-2 py-3 border-b border-border/50 last:border-0" data-testid={`row-project-${project.id}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{project.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{project.description}</p>
+                  {project.domain && (
+                    <a
+                      href={project.domain.startsWith("http") ? project.domain : `https://${project.domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary mt-1 inline-flex items-center gap-1 hover:underline"
+                      data-testid={`link-project-domain-${project.id}`}
+                    >
+                      {project.domain}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <Badge variant="secondary" className={projectStatusColor[project.status] || ""}>
+                  {project.status}
+                </Badge>
+              </div>
+            ))}
+            {(!projects || projects.length === 0) && (
+              <p className="text-sm text-muted-foreground text-center py-4">No projects assigned yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Pending Invoices</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {pendingInvoices.map((invoice) => (
+              <div key={invoice.id} className="flex items-center justify-between gap-2 py-3 border-b border-border/50 last:border-0" data-testid={`row-invoice-${invoice.id}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{invoice.description || "Invoice"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {invoice.dueDate ? `Due ${new Date(invoice.dueDate).toLocaleDateString()}` : "No due date"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold" data-testid={`text-invoice-amount-${invoice.id}`}>
+                    ${parseFloat(invoice.amount).toLocaleString()}
+                  </span>
+                  <Badge variant="secondary" className="bg-chart-4/10 text-chart-4 dark:bg-chart-4/20">
+                    pending
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {pendingInvoices.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">No pending invoices</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

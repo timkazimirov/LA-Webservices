@@ -1,13 +1,14 @@
 import { eq, and, desc, or } from "drizzle-orm";
 import { db } from "./db";
 import {
-  users, projects, contracts, invoices, messages, analyticsSnapshots,
+  users, projects, contracts, invoices, messages, analyticsSnapshots, projectRequests,
   type User, type InsertUser,
   type Project, type InsertProject,
   type Contract, type InsertContract,
   type Invoice, type InsertInvoice,
   type Message, type InsertMessage,
   type AnalyticsSnapshot, type InsertAnalyticsSnapshot,
+  type ProjectRequest, type InsertProjectRequest,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -16,6 +17,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getUsers(): Promise<User[]>;
   getClientUsers(): Promise<User[]>;
+  getAdminUsers(): Promise<User[]>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: string): Promise<void>;
 
@@ -48,6 +50,11 @@ export interface IStorage {
 
   getAnalytics(projectId: string): Promise<AnalyticsSnapshot[]>;
   createAnalytics(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot>;
+
+  getProjectRequests(): Promise<ProjectRequest[]>;
+  getProjectRequestsByClient(clientId: string): Promise<ProjectRequest[]>;
+  createProjectRequest(req: InsertProjectRequest): Promise<ProjectRequest>;
+  updateProjectRequest(id: string, data: Partial<ProjectRequest>): Promise<ProjectRequest | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -72,6 +79,10 @@ export class DatabaseStorage implements IStorage {
 
   async getClientUsers(): Promise<User[]> {
     return db.select().from(users).where(eq(users.role, "client")).orderBy(desc(users.createdAt));
+  }
+
+  async getAdminUsers(): Promise<User[]> {
+    return db.select().from(users).where(eq(users.role, "admin")).orderBy(desc(users.createdAt));
   }
 
   async updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined> {
@@ -207,6 +218,26 @@ export class DatabaseStorage implements IStorage {
   async createAnalytics(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot> {
     const [created] = await db.insert(analyticsSnapshots).values(snapshot).returning();
     return created;
+  }
+
+  async getProjectRequests(): Promise<ProjectRequest[]> {
+    return db.select().from(projectRequests).orderBy(desc(projectRequests.createdAt));
+  }
+
+  async getProjectRequestsByClient(clientId: string): Promise<ProjectRequest[]> {
+    return db.select().from(projectRequests)
+      .where(eq(projectRequests.clientId, clientId))
+      .orderBy(desc(projectRequests.createdAt));
+  }
+
+  async createProjectRequest(req: InsertProjectRequest): Promise<ProjectRequest> {
+    const [created] = await db.insert(projectRequests).values(req).returning();
+    return created;
+  }
+
+  async updateProjectRequest(id: string, data: Partial<ProjectRequest>): Promise<ProjectRequest | undefined> {
+    const [updated] = await db.update(projectRequests).set(data).where(eq(projectRequests.id, id)).returning();
+    return updated;
   }
 }
 

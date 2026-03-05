@@ -2,7 +2,6 @@ import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut,
 } from "lucide-react";
-import logoPath from "@assets/la-webservices-logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -45,10 +44,11 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard">
           <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home">
-            <img src={logoPath} alt="LA Webservices" className="w-10 h-10 rounded-md object-cover scale-[1.8]" />
+            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">LA</span>
+            </div>
             <div>
-              <h1 className="text-sm font-semibold tracking-tight">LA</h1>
-              <p className="text-[10px] text-muted-foreground tracking-wide uppercase">Webservices</p>
+              <h1 className="text-sm font-semibold tracking-tight">LA Webservices</h1>
             </div>
           </div>
         </Link>

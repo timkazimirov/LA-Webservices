@@ -40,6 +40,7 @@ function AuthenticatedLayout() {
               <Route path="/login">{() => <Redirect to="/dashboard" />}</Route>
               <Route path="/">{() => <Redirect to="/dashboard" />}</Route>
               {isAdmin && <Route path="/clients" component={ClientsPage} />}
+              {isAdmin && <Route path="/clients/:id" component={ClientsPage} />}
               <Route path="/projects" component={ProjectsPage} />
               <Route path="/contracts" component={ContractsPage} />
               <Route path="/invoices" component={InvoicesPage} />

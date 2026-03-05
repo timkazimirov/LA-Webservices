@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireAdmin } from "./auth";
 import Stripe from "stripe";
-import { insertProjectSchema, insertContractSchema, insertInvoiceSchema, insertMessageSchema } from "@shared/schema";
+import { insertProjectSchema, insertContractSchema, insertInvoiceSchema, insertMessageSchema, insertProjectRequestSchema, insertAnalyticsSchema } from "@shared/schema";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-04-30.basil" as any });
 
@@ -18,6 +18,73 @@ export async function registerRoutes(
       const clients = await storage.getClientUsers();
       const safeClients = clients.map(({ password, ...c }) => c);
       res.json(safeClients);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/clients/:id", requireAdmin, async (req, res) => {
+    try {
+      const client = await storage.getUser(req.params.id);
+      if (!client || client.role !== "client") return res.status(404).json({ message: "Client not found" });
+      const { password, ...safe } = client;
+      const clientProjects = await storage.getProjectsByClient(client.id);
+      const clientInvoices = await storage.getInvoicesByClient(client.id);
+      const clientContracts = await storage.getContractsByClient(client.id);
+      const clientRequests = await storage.getProjectRequestsByClient(client.id);
+      res.json({ ...safe, projects: clientProjects, invoices: clientInvoices, contracts: clientContracts, projectRequests: clientRequests });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.patch("/api/clients/:id", requireAdmin, async (req, res) => {
+    try {
+      const allowedFields = ["clientStage", "websiteUrl", "notes", "fullName", "email", "company", "phone"];
+      const sanitized: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) sanitized[key] = req.body[key];
+      }
+      const updated = await storage.updateUser(req.params.id, sanitized);
+      if (!updated) return res.status(404).json({ message: "Client not found" });
+      const { password, ...safe } = updated;
+      res.json(safe);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/clients", requireAdmin, async (req, res) => {
+    try {
+      const { username, password, email, fullName, company, phone, clientStage } = req.body;
+      if (!username || !password || !email || !fullName) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      const existing = await storage.getUserByUsername(username);
+      if (existing) {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+      const crypto = await import("crypto");
+      const salt = crypto.randomBytes(16).toString("hex");
+      const derivedKey = crypto.scryptSync(password, salt, 64).toString("hex");
+      const hashedPassword = `${salt}.${derivedKey}`;
+      const user = await storage.createUser({
+        username, password: hashedPassword, email, fullName,
+        role: "client", company: company || null, phone: phone || null,
+        clientStage: clientStage || "potential",
+      });
+      const { password: _, ...safeUser } = user;
+      res.status(201).json(safeUser);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin-users", requireAuth, async (_req, res) => {
+    try {
+      const admins = await storage.getAdminUsers();
+      const safeAdmins = admins.map(({ password, ...a }) => a);
+      res.json(safeAdmins);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
@@ -305,6 +372,56 @@ export async function registerRoutes(
       }
       const analytics = await storage.getAnalytics(req.params.projectId);
       res.json(analytics);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/analytics", requireAdmin, async (req, res) => {
+    try {
+      const data = insertAnalyticsSchema.parse(req.body);
+      const snapshot = await storage.createAnalytics(data);
+      res.status(201).json(snapshot);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/project-requests", requireAuth, async (req, res) => {
+    try {
+      const user = req.user!;
+      const requests = user.role === "admin"
+        ? await storage.getProjectRequests()
+        : await storage.getProjectRequestsByClient(user.id);
+      res.json(requests);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/project-requests", requireAuth, async (req, res) => {
+    try {
+      const data = insertProjectRequestSchema.parse({
+        ...req.body,
+        clientId: req.user!.id,
+      });
+      const request = await storage.createProjectRequest(data);
+      res.status(201).json(request);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.patch("/api/project-requests/:id", requireAdmin, async (req, res) => {
+    try {
+      const allowedFields = ["status", "adminNotes"];
+      const sanitized: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) sanitized[key] = req.body[key];
+      }
+      const updated = await storage.updateProjectRequest(req.params.id, sanitized);
+      if (!updated) return res.status(404).json({ message: "Request not found" });
+      res.json(updated);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }

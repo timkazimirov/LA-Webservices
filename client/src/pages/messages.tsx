@@ -30,6 +30,11 @@ export default function MessagesPage() {
     enabled: isAdmin,
   });
 
+  const { data: adminUsers } = useQuery<SafeUser[]>({
+    queryKey: ["/api/admin-users"],
+    enabled: !isAdmin,
+  });
+
   const { data: conversation, isLoading: convLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages/conversation", selectedUserId],
     enabled: !!selectedUserId,
@@ -67,6 +72,12 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
+  useEffect(() => {
+    if (!selectedUserId && !isAdmin && adminUsers && adminUsers.length > 0) {
+      setSelectedUserId(adminUsers[0].id);
+    }
+  }, [selectedUserId, isAdmin, adminUsers]);
+
   const contactList: { id: string; name: string; company?: string | null; lastMessage?: string; unreadCount: number }[] = [];
 
   if (isAdmin && clients) {
@@ -76,7 +87,7 @@ export default function MessagesPage() {
         (m.senderId === user?.id && m.receiverId === c.id)
       ) || [];
       const unread = msgs.filter(m => m.senderId === c.id && !m.read).length;
-      const lastMsg = msgs.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
+      const lastMsg = [...msgs].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())[0];
       contactList.push({
         id: c.id,
         name: c.fullName,
@@ -85,39 +96,21 @@ export default function MessagesPage() {
         unreadCount: unread,
       });
     });
-  } else if (!isAdmin && allMessages) {
-    const adminIds = new Set<string>();
-    allMessages.forEach(m => {
-      if (m.senderId !== user?.id) adminIds.add(m.senderId);
-      if (m.receiverId !== user?.id) adminIds.add(m.receiverId);
-    });
-
-    if (adminIds.size === 0 && allMessages.length === 0) {
-      adminIds.add("admin-placeholder");
-    }
-
-    adminIds.forEach(id => {
-      if (id === "admin-placeholder") return;
-      const msgs = allMessages.filter(m =>
-        (m.senderId === id || m.receiverId === id)
-      );
-      const unread = msgs.filter(m => m.senderId === id && !m.read).length;
-      const lastMsg = msgs.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())[0];
+  } else if (!isAdmin && adminUsers) {
+    adminUsers.forEach(admin => {
+      const msgs = allMessages?.filter(m =>
+        (m.senderId === admin.id && m.receiverId === user?.id) ||
+        (m.senderId === user?.id && m.receiverId === admin.id)
+      ) || [];
+      const unread = msgs.filter(m => m.senderId === admin.id && !m.read).length;
+      const lastMsg = [...msgs].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())[0];
       contactList.push({
-        id,
-        name: "LA Webservices",
+        id: admin.id,
+        name: admin.fullName,
+        company: admin.company,
         lastMessage: lastMsg?.content,
         unreadCount: unread,
       });
-    });
-  }
-
-  if (!isAdmin && contactList.length === 0) {
-    contactList.push({
-      id: "find-admin",
-      name: "WebForge Team",
-      lastMessage: "Start a conversation",
-      unreadCount: 0,
     });
   }
 
