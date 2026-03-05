@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
-import { Users, FolderKanban, FileText, DollarSign, TrendingUp, Receipt, CheckCircle2, Clock, Plus, MessageSquare, ExternalLink } from "lucide-react";
+import { Users, FolderKanban, FileText, DollarSign, TrendingUp, Receipt, CheckCircle2, Clock, Plus, MessageSquare, ExternalLink, Check } from "lucide-react";
 import type { Project, Invoice, Contract, ProjectRequest } from "@shared/schema";
 
 function StatCard({ title, value, icon: Icon, description, color }: {
@@ -137,11 +138,31 @@ function AdminDashboard() {
   );
 }
 
+const PRICING_PLANS = [
+  { id: "starter", name: "Starter", price: "$1,000 one-time + $95/mo", description: "Custom website, mobile responsive, SEO, managed hosting" },
+  { id: "monthly", name: "Monthly", price: "$0 upfront — $299/mo", description: "Everything included, bilingual, unlimited edits, priority support" },
+  { id: "custom", name: "Custom", price: "Custom pricing", description: "Fully custom build, integrations, e-commerce, dedicated support" },
+];
+
+const ADD_ONS = [
+  { id: "bilingual", name: "Bilingual Add-on", price: "+$300" },
+  { id: "ecommerce", name: "E-commerce Integration", price: "+$500" },
+  { id: "booking", name: "Custom Booking System", price: "+$400" },
+  { id: "analytics", name: "Analytics Dashboard", price: "+$150" },
+  { id: "widgets", name: "Custom Widgets", price: "From $200" },
+  { id: "branding", name: "Logo & Brand Design", price: "+$350" },
+];
+
 function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [budget, setBudget] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("");
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [timeline, setTimeline] = useState("");
+
+  const toggleAddOn = (id: string) => {
+    setSelectedAddOns(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]);
+  };
 
   const mutation = useMutation({
     mutationFn: async (data: { title: string; description: string; budget: string; timeline: string }) => {
@@ -151,7 +172,8 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
       queryClient.invalidateQueries({ queryKey: ["/api/project-requests"] });
       setTitle("");
       setDescription("");
-      setBudget("");
+      setSelectedPlan("");
+      setSelectedAddOns([]);
       setTimeline("");
       onOpenChange(false);
     },
@@ -159,7 +181,10 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
+    if (!title.trim() || !description.trim() || !selectedPlan) return;
+    const plan = PRICING_PLANS.find(p => p.id === selectedPlan);
+    const addOns = selectedAddOns.map(id => ADD_ONS.find(a => a.id === id)?.name).filter(Boolean);
+    const budget = plan ? `${plan.name} (${plan.price})${addOns.length ? ` + ${addOns.join(", ")}` : ""}` : "";
     mutation.mutate({ title, description, budget, timeline });
   };
 
@@ -171,11 +196,11 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="req-title">Title</Label>
+            <Label htmlFor="req-title">Project Title</Label>
             <Input
               id="req-title"
               data-testid="input-request-title"
-              placeholder="Project title"
+              placeholder="e.g. My Business Website"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -193,19 +218,58 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             />
           </div>
           <div className="space-y-2">
-            <Label>Budget Range</Label>
-            <Select value={budget} onValueChange={setBudget}>
-              <SelectTrigger data-testid="select-request-budget">
-                <SelectValue placeholder="Select budget range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Under $1,000">Under $1,000</SelectItem>
-                <SelectItem value="$1,000-$3,000">$1,000-$3,000</SelectItem>
-                <SelectItem value="$3,000-$5,000">$3,000-$5,000</SelectItem>
-                <SelectItem value="$5,000+">$5,000+</SelectItem>
-                <SelectItem value="Not sure yet">Not sure yet</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Select a Plan</Label>
+            <div className="grid gap-2">
+              {PRICING_PLANS.map((plan) => (
+                <div
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`relative flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedPlan === plan.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                  data-testid={`plan-${plan.id}`}
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${
+                    selectedPlan === plan.id ? "border-primary bg-primary" : "border-muted-foreground/30"
+                  }`}>
+                    {selectedPlan === plan.id && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">{plan.name}</p>
+                      <Badge variant="secondary" className="text-[10px] shrink-0 no-default-active-elevate">{plan.price}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{plan.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Add-ons <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <div className="grid grid-cols-1 gap-1.5">
+              {ADD_ONS.map((addon) => (
+                <label
+                  key={addon.id}
+                  className={`flex items-center gap-3 p-2.5 rounded-md border cursor-pointer transition-colors ${
+                    selectedAddOns.includes(addon.id)
+                      ? "border-primary/50 bg-primary/5"
+                      : "border-border/50 hover:border-border"
+                  }`}
+                  data-testid={`addon-${addon.id}`}
+                >
+                  <Checkbox
+                    checked={selectedAddOns.includes(addon.id)}
+                    onCheckedChange={() => toggleAddOn(addon.id)}
+                    data-testid={`checkbox-addon-${addon.id}`}
+                  />
+                  <span className="text-sm flex-1">{addon.name}</span>
+                  <Badge variant="outline" className="text-[10px] shrink-0 no-default-active-elevate">{addon.price}</Badge>
+                </label>
+              ))}
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Timeline</Label>
@@ -225,7 +289,7 @@ function ProjectRequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <Button
             type="submit"
             className="w-full"
-            disabled={mutation.isPending || !title.trim() || !description.trim()}
+            disabled={mutation.isPending || !title.trim() || !description.trim() || !selectedPlan}
             data-testid="button-submit-request"
           >
             {mutation.isPending ? "Submitting..." : "Submit Request"}
