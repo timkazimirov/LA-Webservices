@@ -59,6 +59,14 @@ export function AppSidebar() {
             </div>
           </div>
         </Link>
+        <a
+          href="/home"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors mt-2"
+          data-testid="link-landing-page"
+        >
+          <Globe className="w-3 h-3" />
+          Back to Homepage
+        </a>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -102,14 +110,6 @@ export function AppSidebar() {
             <p className="text-[11px] text-muted-foreground truncate">{user?.company || user?.email}</p>
           </div>
         </div>
-        <a
-          href="/home"
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors"
-          data-testid="link-landing-page"
-        >
-          <Globe className="w-4 h-4" />
-          Visit Website
-        </a>
         <Button
           variant="ghost"
           size="sm"
