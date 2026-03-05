@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,54 @@ import {
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus
 } from "lucide-react";
 import logoPath from "@assets/la-webservices-logo.png";
+
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(el); } },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, isVisible };
+}
+
+function FadeIn({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const { ref, isVisible } = useInView();
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StaggerGrid({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const { ref, isVisible } = useInView(0.1);
+  return (
+    <div ref={ref} className={className}>
+      {Array.isArray(children) ? children.map((child, i) => (
+        <div
+          key={i}
+          className={`transition-all duration-600 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+          style={{ transitionDelay: `${i * 80}ms` }}
+        >
+          {child}
+        </div>
+      )) : children}
+    </div>
+  );
+}
 
 const services = [
   {
@@ -158,12 +207,12 @@ const upgrades = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
+    <div className="min-h-screen bg-background scroll-smooth">
+      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg transition-all duration-300">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer" data-testid="link-landing-logo">
-              <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+            <div className="flex items-center gap-2 cursor-pointer group" data-testid="link-landing-logo">
+              <div className="w-10 h-10 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
                 <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
               </div>
               <div>
@@ -173,17 +222,17 @@ export default function LandingPage() {
             </div>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#services" className="text-muted-foreground transition-colors" data-testid="link-nav-services">Services</a>
-            <a href="#why-us" className="text-muted-foreground transition-colors" data-testid="link-nav-why">Why Us</a>
-            <a href="#pricing" className="text-muted-foreground transition-colors" data-testid="link-nav-pricing">Pricing</a>
-            <a href="#testimonials" className="text-muted-foreground transition-colors" data-testid="link-nav-testimonials">Testimonials</a>
+            <a href="#services" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-services">Services</a>
+            <a href="#why-us" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-why">Why Us</a>
+            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-pricing">Pricing</a>
+            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-testimonials">Testimonials</a>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login">
               <Button variant="ghost" size="sm" data-testid="link-nav-login">Sign In</Button>
             </Link>
             <Link href="/login">
-              <Button size="sm" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
+              <Button size="sm" className="transition-transform duration-200 hover:scale-105" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
             </Link>
           </div>
         </div>
@@ -193,53 +242,63 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5" />
         <div className="max-w-6xl mx-auto px-6 relative">
           <div className="max-w-3xl">
-            <Badge variant="secondary" className="mb-6 no-default-active-elevate">
-              <Zap className="w-3 h-3 mr-1" /> Small team. Big results.
-            </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-              Websites that actually
-              <br />
-              <span className="text-primary">work for your business</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl">
-              We're a small local team that builds custom websites in English and Spanish.
-              No offshore teams. No cookie-cutter templates. No overpriced agencies.
-              Just clean, fast websites that bring you more customers.
-            </p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <Link href="/login">
-                <Button size="lg" data-testid="button-hero-start">
-                  Start Your Project <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <a href="#pricing">
-                <Button size="lg" variant="secondary" data-testid="button-hero-pricing">
-                  View Pricing
-                </Button>
-              </a>
-            </div>
-            <div className="flex items-center gap-6 mt-10 text-sm text-muted-foreground flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                <span>Bilingual EN/ES</span>
+            <FadeIn>
+              <Badge variant="secondary" className="mb-6 no-default-active-elevate">
+                <Zap className="w-3 h-3 mr-1" /> Small team. Big results.
+              </Badge>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+                Websites that actually
+                <br />
+                <span className="text-primary">work for your business</span>
+              </h1>
+            </FadeIn>
+            <FadeIn delay={200}>
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl">
+                We're a small local team that builds custom websites in English and Spanish.
+                No offshore teams. No cookie-cutter templates. No overpriced agencies.
+                Just clean, fast websites that bring you more customers.
+              </p>
+            </FadeIn>
+            <FadeIn delay={300}>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Link href="/login">
+                  <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-start">
+                    Start Your Project <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <a href="#pricing">
+                  <Button size="lg" variant="secondary" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-pricing">
+                    View Pricing
+                  </Button>
+                </a>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                <span>Unlimited edits</span>
+            </FadeIn>
+            <FadeIn delay={400}>
+              <div className="flex items-center gap-6 mt-10 text-sm text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-chart-2" />
+                  <span>Bilingual EN/ES</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-chart-2" />
+                  <span>Unlimited edits</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-chart-2" />
+                  <span>Hosting included</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-chart-2" />
+                  <span>Fair pricing</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                <span>Hosting included</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                <span>Fair pricing</span>
-              </div>
-            </div>
+            </FadeIn>
           </div>
-          <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-80">
+          <FadeIn delay={300} className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-80">
             <div className="relative">
-              <div className="w-64 h-48 rounded-lg bg-card border border-card-border p-4 rotate-3 shadow-lg">
+              <div className="w-64 h-48 rounded-lg bg-card border border-card-border p-4 rotate-3 shadow-lg transition-transform duration-500 hover:rotate-0 hover:scale-105">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
                   <div className="w-2.5 h-2.5 rounded-full bg-chart-4/60" />
@@ -252,7 +311,7 @@ export default function LandingPage() {
                   <div className="h-8 rounded bg-primary/10 w-1/3 mt-3" />
                 </div>
               </div>
-              <div className="absolute -bottom-6 -left-6 w-48 h-32 rounded-lg bg-card border border-card-border p-3 -rotate-6 shadow-lg">
+              <div className="absolute -bottom-6 -left-6 w-48 h-32 rounded-lg bg-card border border-card-border p-3 -rotate-6 shadow-lg transition-transform duration-500 hover:rotate-0 hover:scale-105">
                 <div className="flex items-center gap-2 mb-2">
                   <Monitor className="w-3 h-3 text-primary" />
                   <span className="text-[10px] font-medium">Desktop</span>
@@ -269,24 +328,24 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       <section id="services" className="py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">What we do</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything your business website needs</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               From design to deployment, we handle every aspect of your web presence so you can focus on running your business.
             </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          </FadeIn>
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {services.map((service) => (
-              <Card key={service.title}>
+              <Card key={service.title} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
                 <CardContent className="p-5">
-                  <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center mb-3">
+                  <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-110">
                     <service.icon className="w-4 h-4 text-primary" />
                   </div>
                   <h3 className="font-semibold text-sm mb-1.5">{service.title}</h3>
@@ -294,7 +353,7 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
@@ -302,32 +361,38 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge variant="secondary" className="mb-4 no-default-active-elevate">Why choose us</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Skip the headaches.<br />Work with people who care.
-              </h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                We're not a faceless corporation or an overseas outsourcing shop. We're a small, skilled team right here
-                in your community. When you call, a real person answers. When you need a change, it happens fast.
-                Your success is our success.
-              </p>
-              <div className="space-y-3 mb-6">
-                {[
-                  "Direct communication with your development team",
-                  "Same-day response on all requests",
-                  "No contracts with hidden clauses or surprise fees",
-                  "Your website, your data, your ownership",
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-chart-2 mt-0.5 shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
+              <FadeIn>
+                <Badge variant="secondary" className="mb-4 no-default-active-elevate">Why choose us</Badge>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Skip the headaches.<br />Work with people who care.
+                </h2>
+              </FadeIn>
+              <FadeIn delay={100}>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  We're not a faceless corporation or an overseas outsourcing shop. We're a small, skilled team right here
+                  in your community. When you call, a real person answers. When you need a change, it happens fast.
+                  Your success is our success.
+                </p>
+              </FadeIn>
+              <FadeIn delay={200}>
+                <div className="space-y-3 mb-6">
+                  {[
+                    "Direct communication with your development team",
+                    "Same-day response on all requests",
+                    "No contracts with hidden clauses or surprise fees",
+                    "Your website, your data, your ownership",
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-chart-2 mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeIn>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <StaggerGrid className="grid grid-cols-2 gap-4">
               {differentiators.map((diff) => (
-                <Card key={diff.title}>
+                <Card key={diff.title} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
                   <CardContent className="p-5">
                     <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center mb-3">
                       <diff.icon className="w-4 h-4 text-primary" />
@@ -337,26 +402,26 @@ export default function LandingPage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+            </StaggerGrid>
           </div>
         </div>
       </section>
 
       <section id="pricing" className="py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Pricing</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               No surprise fees. No hidden costs. Pick a plan that fits your business and we'll handle the rest.
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          </FadeIn>
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pricingPlans.map((plan) => (
-              <Card key={plan.name} className={plan.popular ? "border-primary relative" : ""}>
+              <Card key={plan.name} className={`transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${plan.popular ? "border-primary relative" : ""}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="no-default-active-elevate">Most Popular</Badge>
+                    <Badge className="no-default-active-elevate animate-pulse">Most Popular</Badge>
                   </div>
                 )}
                 <CardContent className="p-6">
@@ -376,7 +441,7 @@ export default function LandingPage() {
                   </div>
                   <Link href="/login">
                     <Button
-                      className="w-full"
+                      className="w-full transition-transform duration-200 hover:scale-105"
                       variant={plan.popular ? "default" : "secondary"}
                       data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     >
@@ -386,44 +451,44 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </StaggerGrid>
 
-          <div className="mt-16">
+          <FadeIn className="mt-16">
             <div className="text-center mb-8">
               <h3 className="text-xl font-bold mb-2">Available Upgrades</h3>
               <p className="text-sm text-muted-foreground">Add these to any plan to extend your site's capabilities</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upgrades.map((upgrade) => (
-                <Card key={upgrade.name}>
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Plus className="w-4 h-4 text-primary" />
+          </FadeIn>
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upgrades.map((upgrade) => (
+              <Card key={upgrade.name} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 transition-transform duration-300 hover:rotate-90">
+                    <Plus className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="font-medium text-sm">{upgrade.name}</h4>
+                      <Badge variant="secondary" className="shrink-0 text-[11px] no-default-active-elevate">{upgrade.price}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-medium text-sm">{upgrade.name}</h4>
-                        <Badge variant="secondary" className="shrink-0 text-[11px] no-default-active-elevate">{upgrade.price}</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{upgrade.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{upgrade.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </StaggerGrid>
         </div>
       </section>
 
       <section id="testimonials" className="py-20 bg-card/50 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Testimonials</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What our clients say</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          </FadeIn>
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
-              <Card key={t.name}>
+              <Card key={t.name} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-0.5 mb-4">
                     {Array.from({ length: t.rating }).map((_, i) => (
@@ -438,12 +503,12 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
       <section className="py-20 border-t border-border/50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+        <FadeIn className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build something great?</h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             Let's talk about your project. No pressure, no obligations. Just a conversation about what you need
@@ -451,12 +516,12 @@ export default function LandingPage() {
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link href="/login">
-              <Button size="lg" data-testid="button-cta-start">
+              <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-cta-start">
                 Start Your Project <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
           </div>
-        </div>
+        </FadeIn>
       </section>
 
       <footer className="border-t border-border py-10">
