@@ -19,10 +19,10 @@ import { z } from "zod";
 import {
   Plus, Search, Mail, Phone, Building2, Users, ArrowLeft,
   Globe, Calendar, Send, FileText, FolderOpen, MessageSquare,
-  ExternalLink, Save
+  ExternalLink, Save, BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { User, Project, Invoice, Contract, ProjectRequest, Message } from "@shared/schema";
+import type { User, Project, Invoice, Contract, ProjectRequest, Message, AnalyticsSnapshot } from "@shared/schema";
 
 type SafeUser = Omit<User, "password">;
 
@@ -69,6 +69,15 @@ const newInvoiceSchema = z.object({
   amount: z.string().min(1),
   description: z.string().optional(),
   dueDate: z.string().optional(),
+});
+
+const newAnalyticsSchema = z.object({
+  projectId: z.string().min(1, "Project is required"),
+  visitors: z.string().min(1),
+  pageViews: z.string().min(1),
+  bounceRate: z.string().optional(),
+  avgSessionDuration: z.string().optional(),
+  date: z.string().min(1, "Date is required"),
 });
 
 function ListView() {
@@ -294,6 +303,8 @@ function ProfileView({ clientId }: { clientId: string }) {
   const [messageContent, setMessageContent] = useState("");
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+  const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
+  const [selectedAnalyticsProject, setSelectedAnalyticsProject] = useState<string | null>(null);
 
   const { data: client, isLoading } = useQuery<ClientProfile>({
     queryKey: ["/api/clients", clientId],
@@ -386,6 +397,39 @@ function ProfileView({ clientId }: { clientId: string }) {
     },
   });
 
+  const { data: analyticsData } = useQuery<AnalyticsSnapshot[]>({
+    queryKey: [`/api/analytics/${selectedAnalyticsProject}`],
+    enabled: activeTab === "analytics" && !!selectedAnalyticsProject,
+  });
+
+  const analyticsForm = useForm<z.infer<typeof newAnalyticsSchema>>({
+    resolver: zodResolver(newAnalyticsSchema),
+    defaultValues: { projectId: "", visitors: "", pageViews: "", bounceRate: "", avgSessionDuration: "", date: "" },
+  });
+
+  const createAnalyticsMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof newAnalyticsSchema>) => {
+      await apiRequest("POST", "/api/analytics", {
+        projectId: data.projectId,
+        visitors: parseInt(data.visitors),
+        pageViews: parseInt(data.pageViews),
+        bounceRate: data.bounceRate || null,
+        avgSessionDuration: data.avgSessionDuration ? parseInt(data.avgSessionDuration) : null,
+        date: data.date,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      setSelectedAnalyticsProject(variables.projectId);
+      queryClient.invalidateQueries({ queryKey: [`/api/analytics/${variables.projectId}`] });
+      setAnalyticsDialogOpen(false);
+      analyticsForm.reset();
+      toast({ title: "Analytics snapshot added" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to add analytics", description: err.message, variant: "destructive" });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
@@ -456,6 +500,7 @@ function ProfileView({ clientId }: { clientId: string }) {
           <TabsTrigger value="projects" data-testid="tab-projects">Projects</TabsTrigger>
           <TabsTrigger value="messages" data-testid="tab-messages">Messages</TabsTrigger>
           <TabsTrigger value="invoices" data-testid="tab-invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 mt-4">
@@ -749,6 +794,150 @@ function ProfileView({ clientId }: { clientId: string }) {
                       </Badge>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardTitle className="text-base">Analytics</CardTitle>
+              <Dialog open={analyticsDialogOpen} onOpenChange={setAnalyticsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-add-analytics" disabled={!client.projects.length}>
+                    <Plus className="w-4 h-4 mr-2" />Add Snapshot
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Analytics Snapshot</DialogTitle>
+                  </DialogHeader>
+                  <Form {...analyticsForm}>
+                    <form onSubmit={analyticsForm.handleSubmit((d) => createAnalyticsMutation.mutate(d))} className="space-y-4">
+                      <FormField control={analyticsForm.control} name="projectId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-analytics-project">
+                                <SelectValue placeholder="Select project" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {client.projects.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={analyticsForm.control} name="date" render={({ field }) => (
+                        <FormItem><FormLabel>Date</FormLabel><FormControl><Input {...field} type="date" data-testid="input-analytics-date" /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField control={analyticsForm.control} name="visitors" render={({ field }) => (
+                          <FormItem><FormLabel>Visitors</FormLabel><FormControl><Input {...field} type="number" data-testid="input-analytics-visitors" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={analyticsForm.control} name="pageViews" render={({ field }) => (
+                          <FormItem><FormLabel>Page Views</FormLabel><FormControl><Input {...field} type="number" data-testid="input-analytics-pageviews" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField control={analyticsForm.control} name="bounceRate" render={({ field }) => (
+                          <FormItem><FormLabel>Bounce Rate (%)</FormLabel><FormControl><Input {...field} type="number" step="0.01" placeholder="0.00" data-testid="input-analytics-bounce" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={analyticsForm.control} name="avgSessionDuration" render={({ field }) => (
+                          <FormItem><FormLabel>Avg Session (s)</FormLabel><FormControl><Input {...field} type="number" placeholder="0" data-testid="input-analytics-duration" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={createAnalyticsMutation.isPending} data-testid="button-submit-analytics">
+                        {createAnalyticsMutation.isPending ? "Adding..." : "Add Snapshot"}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {client.projects.length === 0 ? (
+                <div className="text-center py-8">
+                  <BarChart3 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground" data-testid="text-no-analytics">Add projects first to track analytics</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {client.projects.map(p => (
+                      <Button
+                        key={p.id}
+                        variant={selectedAnalyticsProject === p.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedAnalyticsProject(p.id)}
+                        data-testid={`button-analytics-project-${p.id}`}
+                      >
+                        {p.name}
+                      </Button>
+                    ))}
+                  </div>
+                  {selectedAnalyticsProject ? (
+                    analyticsData && analyticsData.length > 0 ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="p-3 rounded-md bg-muted/50 text-center">
+                            <p className="text-xs text-muted-foreground">Total Visitors</p>
+                            <p className="text-lg font-bold mt-1" data-testid="text-total-visitors">
+                              {analyticsData.reduce((s, a) => s + a.visitors, 0).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-md bg-muted/50 text-center">
+                            <p className="text-xs text-muted-foreground">Total Page Views</p>
+                            <p className="text-lg font-bold mt-1" data-testid="text-total-pageviews">
+                              {analyticsData.reduce((s, a) => s + a.pageViews, 0).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-md bg-muted/50 text-center">
+                            <p className="text-xs text-muted-foreground">Avg Bounce Rate</p>
+                            <p className="text-lg font-bold mt-1" data-testid="text-avg-bounce">
+                              {(analyticsData.filter(a => a.bounceRate).reduce((s, a) => s + parseFloat(a.bounceRate || "0"), 0) / (analyticsData.filter(a => a.bounceRate).length || 1)).toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-md bg-muted/50 text-center">
+                            <p className="text-xs text-muted-foreground">Avg Session</p>
+                            <p className="text-lg font-bold mt-1" data-testid="text-avg-session">
+                              {Math.round(analyticsData.filter(a => a.avgSessionDuration).reduce((s, a) => s + (a.avgSessionDuration || 0), 0) / (analyticsData.filter(a => a.avgSessionDuration).length || 1))}s
+                            </p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          {analyticsData.map((snap) => (
+                            <div key={snap.id} className="flex items-center justify-between gap-2 p-3 rounded-md bg-muted/50" data-testid={`analytics-${snap.id}`}>
+                              <div className="flex items-center gap-3">
+                                <Calendar className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">{new Date(snap.date).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span>{snap.visitors} visitors</span>
+                                <span>{snap.pageViews} views</span>
+                                {snap.bounceRate && <span>{snap.bounceRate}% bounce</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <BarChart3 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground" data-testid="text-no-snapshots">No analytics data yet. Add a snapshot to get started.</p>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground" data-testid="text-select-project">Select a project above to view analytics</p>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

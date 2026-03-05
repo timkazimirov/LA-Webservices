@@ -15,7 +15,7 @@ A professional website agency management platform for managing clients, projects
 - `/login` - Login/register page
 - `/dashboard` - Admin/client dashboard (authenticated)
 - `/clients` - Admin-only client management with stage filtering (potential/negotiation/active)
-- `/clients/:id` - Admin-only client profile view with tabs (Overview, Projects, Messages, Invoices)
+- `/clients/:id` - Admin-only client profile view with tabs (Overview, Projects, Messages, Invoices, Analytics)
 - `/requests` - Admin-only project requests management page
 - `/projects` - Project listing/management
 - `/contracts` - Contract management
@@ -37,7 +37,7 @@ A professional website agency management platform for managing clients, projects
 
 - **Client Stages**: Admin can categorize clients as potential, negotiation, or active (paying)
 - **Client Profiles**: Click on any client to see their full profile with projects, messages, invoices, and notes
-- **Project Requests**: Clients submit requests from dashboard; admin sees them on /requests page with approve/reject/notes; badge in sidebar shows pending count
+- **Project Requests**: Clients submit requests from dashboard; admin sees them on /requests page with approve/reject/notes; badge in sidebar shows pending count. Requests also appear on client's My Projects page with "requested" status badge
 - **Recurring Invoices**: Admin creates recurring invoices with monthly/quarterly/yearly intervals; "Generate Recurring" button creates new pending invoices when billing date is due; parent invoice advances to next cycle
 - **Stripe Payments**: Client clicks "Pay Now" → scrollable payment dialog with Stripe Elements → payment confirmed → invoice marked paid
 - **Messaging**: Clients automatically see admin contacts; admins see all clients. Real-time polling

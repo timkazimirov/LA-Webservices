@@ -13,10 +13,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Globe, ExternalLink, FolderKanban } from "lucide-react";
+import { Plus, Search, Globe, ExternalLink, FolderKanban, ClipboardList, DollarSign, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import type { Project, User } from "@shared/schema";
+import type { Project, ProjectRequest, User } from "@shared/schema";
 
 type SafeUser = Omit<User, "password">;
 
@@ -40,6 +40,10 @@ const statusColor: Record<string, string> = {
   active: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20",
   completed: "bg-primary/10 text-primary",
   paused: "bg-muted text-muted-foreground",
+  requested: "bg-chart-5/10 text-chart-5 dark:bg-chart-5/20",
+  approved: "bg-chart-2/10 text-chart-2 dark:bg-chart-2/20",
+  pending: "bg-chart-4/10 text-chart-4 dark:bg-chart-4/20",
+  rejected: "bg-destructive/10 text-destructive",
 };
 
 export default function ProjectsPage() {
@@ -51,6 +55,7 @@ export default function ProjectsPage() {
 
   const { data: projectsList, isLoading } = useQuery<Project[]>({ queryKey: ["/api/projects"] });
   const { data: clients } = useQuery<SafeUser[]>({ queryKey: ["/api/clients"], enabled: isAdmin });
+  const { data: projectRequests } = useQuery<ProjectRequest[]>({ queryKey: ["/api/project-requests"], enabled: !isAdmin });
 
   const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
@@ -83,7 +88,22 @@ export default function ProjectsPage() {
     },
   });
 
-  const filtered = projectsList?.filter(p => {
+  const requestCards = (!isAdmin && projectRequests) ? projectRequests.map(r => ({
+    id: `req-${r.id}`,
+    name: r.title,
+    domain: null,
+    status: r.status === "pending" ? "requested" : r.status,
+    description: r.description,
+    createdAt: r.createdAt,
+    clientId: r.clientId,
+    isRequest: true,
+    budget: r.budget,
+    timeline: r.timeline,
+  })) : [];
+
+  const allItems = [...(projectsList || []).map(p => ({ ...p, isRequest: false, budget: null, timeline: null })), ...requestCards];
+
+  const filtered = allItems.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.domain?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
@@ -161,6 +181,9 @@ export default function ProjectsPage() {
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {statusOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            {!isAdmin && <SelectItem value="requested">Requested</SelectItem>}
+            {!isAdmin && <SelectItem value="approved">Approved</SelectItem>}
+            {!isAdmin && <SelectItem value="rejected">Rejected</SelectItem>}
           </SelectContent>
         </Select>
       </div>
@@ -176,8 +199,8 @@ export default function ProjectsPage() {
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-3 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <Globe className="w-4 h-4 text-primary" />
+                    <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${project.isRequest ? "bg-chart-5/10 text-chart-5" : "bg-primary/10 text-primary"}`}>
+                      {project.isRequest ? <ClipboardList className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{project.name}</p>
@@ -186,9 +209,19 @@ export default function ProjectsPage() {
                           <ExternalLink className="w-3 h-3" />{project.domain}
                         </p>
                       )}
+                      {project.isRequest && project.budget && (
+                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" />{project.budget}
+                        </p>
+                      )}
+                      {project.isRequest && project.timeline && (
+                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />{project.timeline}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  {isAdmin ? (
+                  {isAdmin && !project.isRequest ? (
                     <Select value={project.status} onValueChange={(v) => updateStatusMutation.mutate({ id: project.id, status: v })}>
                       <SelectTrigger className="w-auto h-auto p-0 border-0 shadow-none">
                         <Badge variant="secondary" className={statusColor[project.status] || ""}>{project.status}</Badge>
@@ -205,7 +238,7 @@ export default function ProjectsPage() {
                   <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{project.description}</p>
                 )}
                 <p className="text-[10px] text-muted-foreground mt-3 pt-3 border-t border-border/50">
-                  Created {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
+                  {project.isRequest ? "Requested" : "Created"} {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
                 </p>
               </CardContent>
             </Card>
