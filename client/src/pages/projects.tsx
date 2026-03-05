@@ -10,13 +10,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Globe, ExternalLink, FolderKanban, ClipboardList, DollarSign, Calendar } from "lucide-react";
+import { Plus, Search, Globe, ExternalLink, FolderKanban, ClipboardList, DollarSign, Calendar, Save, BarChart3, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import type { Project, ProjectRequest, User } from "@shared/schema";
+import type { Project, ProjectRequest, User, AnalyticsSnapshot } from "@shared/schema";
 
 type SafeUser = Omit<User, "password">;
 
@@ -46,10 +47,296 @@ const statusColor: Record<string, string> = {
   rejected: "bg-destructive/10 text-destructive",
 };
 
+const analyticsSchema = z.object({
+  visitors: z.string().min(1),
+  pageViews: z.string().min(1),
+  bounceRate: z.string().optional(),
+  avgSessionDuration: z.string().optional(),
+  date: z.string().min(1, "Date is required"),
+});
+
+function ProjectDetailView({ project, onBack }: { project: Project; onBack: () => void }) {
+  const { toast } = useToast();
+  const [editDomain, setEditDomain] = useState(project.domain || "");
+  const [editDescription, setEditDescription] = useState(project.description || "");
+  const [editName, setEditName] = useState(project.name);
+  const [editStatus, setEditStatus] = useState(project.status);
+  const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
+
+  const { data: clients } = useQuery<SafeUser[]>({ queryKey: ["/api/clients"] });
+  const client = clients?.find(c => c.id === project.clientId);
+
+  const { data: analyticsData, isLoading: analyticsLoading, isError: analyticsError } = useQuery<AnalyticsSnapshot[]>({
+    queryKey: ["/api/analytics", project.id],
+    enabled: activeTab === "analytics",
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: Record<string, any>) => {
+      const res = await apiRequest("PATCH", `/api/projects/${project.id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      toast({ title: "Project updated" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to update", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const analyticsForm = useForm<z.infer<typeof analyticsSchema>>({
+    resolver: zodResolver(analyticsSchema),
+    defaultValues: { visitors: "", pageViews: "", bounceRate: "", avgSessionDuration: "", date: "" },
+  });
+
+  const createAnalyticsMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof analyticsSchema>) => {
+      await apiRequest("POST", "/api/analytics", {
+        projectId: project.id,
+        visitors: parseInt(data.visitors),
+        pageViews: parseInt(data.pageViews),
+        bounceRate: data.bounceRate || null,
+        avgSessionDuration: data.avgSessionDuration ? parseInt(data.avgSessionDuration) : null,
+        date: data.date,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics", project.id] });
+      setAnalyticsDialogOpen(false);
+      analyticsForm.reset();
+      toast({ title: "Analytics snapshot added" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to add analytics", description: err.message, variant: "destructive" });
+    },
+  });
+
+  return (
+    <div className="p-6 space-y-6">
+      <Button variant="ghost" onClick={onBack} data-testid="button-back-projects">
+        <ArrowLeft className="w-4 h-4 mr-2" />Back to Projects
+      </Button>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Globe className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold" data-testid="text-project-detail-name">{project.name}</h1>
+              {client && (
+                <p className="text-sm text-muted-foreground mt-0.5" data-testid="text-project-client">
+                  Client: {client.fullName} {client.company ? `(${client.company})` : ""}
+                </p>
+              )}
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                <Badge variant="secondary" className={statusColor[project.status] || ""} data-testid="badge-project-status">
+                  {project.status}
+                </Badge>
+                {project.domain && (
+                  <a
+                    href={project.domain.startsWith("http") ? project.domain : `https://${project.domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary flex items-center gap-1 hover:underline"
+                    data-testid="link-project-domain"
+                  >
+                    <ExternalLink className="w-3 h-3" />{project.domain}
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList data-testid="tabs-project-detail">
+          <TabsTrigger value="details" data-testid="tab-project-details">Details</TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-project-analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="mt-4 space-y-4">
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Project Name</label>
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  data-testid="input-edit-project-name"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Domain URL</label>
+                <Input
+                  value={editDomain}
+                  onChange={(e) => setEditDomain(e.target.value)}
+                  placeholder="example.com"
+                  data-testid="input-edit-project-domain"
+                />
+                <p className="text-xs text-muted-foreground mt-1">The client will see this domain link on their projects page</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Status</label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger data-testid="select-edit-project-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Notes</label>
+                <Textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Add project notes, plan details, progress updates..."
+                  rows={5}
+                  data-testid="input-edit-project-notes"
+                />
+              </div>
+              <Button
+                onClick={() => updateMutation.mutate({
+                  name: editName,
+                  domain: editDomain || null,
+                  status: editStatus,
+                  description: editDescription || null,
+                })}
+                disabled={updateMutation.isPending}
+                data-testid="button-save-project"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <h3 className="font-medium text-sm">Analytics Snapshots</h3>
+                <Dialog open={analyticsDialogOpen} onOpenChange={setAnalyticsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" data-testid="button-add-project-analytics">
+                      <Plus className="w-4 h-4 mr-2" />Add Snapshot
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Analytics Snapshot</DialogTitle>
+                    </DialogHeader>
+                    <Form {...analyticsForm}>
+                      <form onSubmit={analyticsForm.handleSubmit((d) => createAnalyticsMutation.mutate(d))} className="space-y-4">
+                        <FormField control={analyticsForm.control} name="date" render={({ field }) => (
+                          <FormItem><FormLabel>Date</FormLabel><FormControl><Input {...field} type="date" data-testid="input-snap-date" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField control={analyticsForm.control} name="visitors" render={({ field }) => (
+                            <FormItem><FormLabel>Visitors</FormLabel><FormControl><Input {...field} type="number" data-testid="input-snap-visitors" /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={analyticsForm.control} name="pageViews" render={({ field }) => (
+                            <FormItem><FormLabel>Page Views</FormLabel><FormControl><Input {...field} type="number" data-testid="input-snap-pageviews" /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField control={analyticsForm.control} name="bounceRate" render={({ field }) => (
+                            <FormItem><FormLabel>Bounce Rate (%)</FormLabel><FormControl><Input {...field} type="number" step="0.01" data-testid="input-snap-bounce" /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={analyticsForm.control} name="avgSessionDuration" render={({ field }) => (
+                            <FormItem><FormLabel>Avg Session (s)</FormLabel><FormControl><Input {...field} type="number" data-testid="input-snap-duration" /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={createAnalyticsMutation.isPending} data-testid="button-submit-snap">
+                          {createAnalyticsMutation.isPending ? "Adding..." : "Add Snapshot"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {analyticsLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-20 rounded-md" />
+                  <Skeleton className="h-12 rounded-md" />
+                </div>
+              ) : analyticsError ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-destructive">Failed to load analytics data</p>
+                </div>
+              ) : analyticsData && analyticsData.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-md bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground">Total Visitors</p>
+                      <p className="text-lg font-bold mt-1" data-testid="text-proj-total-visitors">
+                        {analyticsData.reduce((s, a) => s + a.visitors, 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-md bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground">Total Page Views</p>
+                      <p className="text-lg font-bold mt-1" data-testid="text-proj-total-pageviews">
+                        {analyticsData.reduce((s, a) => s + a.pageViews, 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-md bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground">Avg Bounce Rate</p>
+                      <p className="text-lg font-bold mt-1">
+                        {(analyticsData.filter(a => a.bounceRate).reduce((s, a) => s + parseFloat(a.bounceRate || "0"), 0) / (analyticsData.filter(a => a.bounceRate).length || 1)).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-md bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground">Avg Session</p>
+                      <p className="text-lg font-bold mt-1">
+                        {Math.round(analyticsData.filter(a => a.avgSessionDuration).reduce((s, a) => s + (a.avgSessionDuration || 0), 0) / (analyticsData.filter(a => a.avgSessionDuration).length || 1))}s
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {analyticsData.map((snap) => (
+                      <div key={snap.id} className="flex items-center justify-between gap-2 p-3 rounded-md bg-muted/50" data-testid={`snap-${snap.id}`}>
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{new Date(snap.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{snap.visitors} visitors</span>
+                          <span>{snap.pageViews} views</span>
+                          {snap.bounceRate && <span>{snap.bounceRate}% bounce</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground" data-testid="text-no-project-analytics">
+                    No analytics data yet. Add a snapshot to start tracking.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
 export default function ProjectsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -78,15 +365,11 @@ export default function ProjectsPage() {
     },
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const res = await apiRequest("PATCH", `/api/projects/${id}`, { status });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-    },
-  });
+  const selectedProject = projectsList?.find(p => p.id === selectedProjectId);
+
+  if (isAdmin && selectedProject) {
+    return <ProjectDetailView project={selectedProject} onBack={() => setSelectedProjectId(null)} />;
+  }
 
   const requestCards = (!isAdmin && projectRequests) ? projectRequests
     .filter(r => r.status !== "approved")
@@ -184,7 +467,6 @@ export default function ProjectsPage() {
             <SelectItem value="all">All statuses</SelectItem>
             {statusOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             {!isAdmin && <SelectItem value="requested">Requested</SelectItem>}
-            {!isAdmin && <SelectItem value="approved">Approved</SelectItem>}
             {!isAdmin && <SelectItem value="rejected">Rejected</SelectItem>}
           </SelectContent>
         </Select>
@@ -196,55 +478,55 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered?.map((project) => (
-            <Card key={project.id} data-testid={`card-project-${project.id}`}>
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
-                    <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${project.isRequest ? "bg-chart-5/10 text-chart-5" : "bg-primary/10 text-primary"}`}>
-                      {project.isRequest ? <ClipboardList className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+          {filtered?.map((project) => {
+            const clientName = isAdmin && clients ? clients.find(c => c.id === project.clientId)?.fullName : null;
+            return (
+              <Card
+                key={project.id}
+                className={isAdmin && !project.isRequest ? "cursor-pointer hover:bg-accent/30 transition-colors" : ""}
+                onClick={isAdmin && !project.isRequest ? () => setSelectedProjectId(project.id) : undefined}
+                data-testid={`card-project-${project.id}`}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${project.isRequest ? "bg-chart-5/10 text-chart-5" : "bg-primary/10 text-primary"}`}>
+                        {project.isRequest ? <ClipboardList className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{project.name}</p>
+                        {clientName && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{clientName}</p>
+                        )}
+                        {project.domain && (
+                          <p className="text-xs text-primary mt-0.5 flex items-center gap-1">
+                            <ExternalLink className="w-3 h-3" />{project.domain}
+                          </p>
+                        )}
+                        {project.isRequest && project.budget && (
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />{project.budget}
+                          </p>
+                        )}
+                        {project.isRequest && project.timeline && (
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />{project.timeline}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm">{project.name}</p>
-                      {project.domain && (
-                        <p className="text-xs text-primary mt-0.5 flex items-center gap-1">
-                          <ExternalLink className="w-3 h-3" />{project.domain}
-                        </p>
-                      )}
-                      {project.isRequest && project.budget && (
-                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />{project.budget}
-                        </p>
-                      )}
-                      {project.isRequest && project.timeline && (
-                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />{project.timeline}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {isAdmin && !project.isRequest ? (
-                    <Select value={project.status} onValueChange={(v) => updateStatusMutation.mutate({ id: project.id, status: v })}>
-                      <SelectTrigger className="w-auto h-auto p-0 border-0 shadow-none">
-                        <Badge variant="secondary" className={statusColor[project.status] || ""}>{project.status}</Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  ) : (
                     <Badge variant="secondary" className={statusColor[project.status] || ""}>{project.status}</Badge>
+                  </div>
+                  {project.description && (
+                    <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{project.description}</p>
                   )}
-                </div>
-                {project.description && (
-                  <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{project.description}</p>
-                )}
-                <p className="text-[10px] text-muted-foreground mt-3 pt-3 border-t border-border/50">
-                  {project.isRequest ? "Requested" : "Created"} {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                  <p className="text-[10px] text-muted-foreground mt-3 pt-3 border-t border-border/50">
+                    {project.isRequest ? "Requested" : "Created"} {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
           {filtered?.length === 0 && (
             <div className="col-span-full text-center py-12">
               <FolderKanban className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
