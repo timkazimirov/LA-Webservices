@@ -39,11 +39,13 @@ export default function ProjectRequestsPage() {
       const res = await apiRequest("PATCH", `/api/project-requests/${id}`, body);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/project-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       setSelectedRequest(null);
       setAdminNotes("");
-      toast({ title: "Request updated" });
+      toast({ title: variables.status === "approved" ? "Request approved — project created" : "Request updated" });
     },
     onError: (err: any) => {
       toast({ title: "Update failed", description: err.message, variant: "destructive" });

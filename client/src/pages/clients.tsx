@@ -569,7 +569,9 @@ function ProfileView({ clientId }: { clientId: string }) {
                               onClick={() => {
                                 apiRequest("PATCH", `/api/project-requests/${req.id}`, { status: "approved" }).then(() => {
                                   queryClient.invalidateQueries({ queryKey: ["/api/clients", clientId] });
-                                  toast({ title: "Request approved" });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/project-requests"] });
+                                  toast({ title: "Request approved — project created" });
                                 });
                               }}
                               data-testid={`button-approve-${req.id}`}

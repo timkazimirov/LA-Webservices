@@ -472,8 +472,30 @@ export async function registerRoutes(
       for (const key of allowedFields) {
         if (req.body[key] !== undefined) sanitized[key] = req.body[key];
       }
+
+      const allRequests = await storage.getProjectRequests();
+      const request = allRequests.find(r => r.id === req.params.id);
+
       const updated = await storage.updateProjectRequest(req.params.id, sanitized);
       if (!updated) return res.status(404).json({ message: "Request not found" });
+
+      if (sanitized.status === "approved" && request && request.status !== "approved") {
+        const description = [
+          updated.description,
+          updated.budget ? `Plan: ${updated.budget}` : null,
+          updated.timeline ? `Timeline: ${updated.timeline}` : null,
+        ].filter(Boolean).join("\n");
+
+        const project = await storage.createProject({
+          clientId: updated.clientId,
+          name: updated.title,
+          description,
+          status: "in-progress",
+        });
+
+        return res.json({ ...updated, project });
+      }
+
       res.json(updated);
     } catch (err: any) {
       res.status(500).json({ message: err.message });

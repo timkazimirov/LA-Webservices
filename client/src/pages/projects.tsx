@@ -88,18 +88,20 @@ export default function ProjectsPage() {
     },
   });
 
-  const requestCards = (!isAdmin && projectRequests) ? projectRequests.map(r => ({
-    id: `req-${r.id}`,
-    name: r.title,
-    domain: null,
-    status: r.status === "pending" ? "requested" : r.status,
-    description: r.description,
-    createdAt: r.createdAt,
-    clientId: r.clientId,
-    isRequest: true,
-    budget: r.budget,
-    timeline: r.timeline,
-  })) : [];
+  const requestCards = (!isAdmin && projectRequests) ? projectRequests
+    .filter(r => r.status !== "approved")
+    .map(r => ({
+      id: `req-${r.id}`,
+      name: r.title,
+      domain: null,
+      status: r.status === "pending" ? "requested" : r.status,
+      description: r.description,
+      createdAt: r.createdAt,
+      clientId: r.clientId,
+      isRequest: true,
+      budget: r.budget,
+      timeline: r.timeline,
+    })) : [];
 
   const allItems = [...(projectsList || []).map(p => ({ ...p, isRequest: false, budget: null, timeline: null })), ...requestCards];
 
