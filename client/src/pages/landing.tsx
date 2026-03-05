@@ -286,7 +286,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="relative py-24 md:py-32 overflow-hidden">
+      <section className="relative py-14 md:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5" />
         <div className="max-w-6xl mx-auto px-6 relative">
           <div className="max-w-3xl">
