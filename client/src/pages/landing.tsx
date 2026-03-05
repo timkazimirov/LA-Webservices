@@ -479,7 +479,7 @@ export default function LandingPage() {
                   <h3 className="font-semibold text-sm mb-1">JCBB Construction</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">Bilingual contractor website with project gallery, service pages, and lead capture. Built for LA local SEO with full English/Spanish support.</p>
                   <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
-                    <Globe className="w-3 h-3" />jcbbconstruction.replit.app
+                    <Globe className="w-3 h-3" />jcbbconstruction.com
                   </p>
                 </CardContent>
               </Card>
@@ -511,7 +511,7 @@ export default function LandingPage() {
                   <h3 className="font-semibold text-sm mb-1">Mining Risk Modeler</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">Full-stack financial analytics platform with interactive risk heatmaps, jurisdiction rankings, AI analyst, and rate calculators.</p>
                   <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
-                    <Globe className="w-3 h-3" />miningriskmodeler.replit.app
+                    <Globe className="w-3 h-3" />miningriskmodeler.com
                   </p>
                 </CardContent>
               </Card>
