@@ -125,10 +125,10 @@ export default function InvoicesPage() {
   const recurringCount = invoicesList?.filter(i => i.isRecurring).length || 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Invoices</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Invoices</h1>
           <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Manage invoices and payments" : "View and pay your invoices"}</p>
         </div>
         <div className="flex items-center gap-2">

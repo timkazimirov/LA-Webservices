@@ -127,10 +127,10 @@ function ListView() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Clients</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Clients</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage your client accounts</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -432,7 +432,7 @@ function ProfileView({ clientId }: { clientId: string }) {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <Skeleton className="h-8 w-32" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-64 w-full" />
@@ -452,7 +452,7 @@ function ProfileView({ clientId }: { clientId: string }) {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <Button variant="ghost" onClick={() => navigate("/clients")} data-testid="button-back">
         <ArrowLeft className="w-4 h-4 mr-2" />Back to Clients
       </Button>

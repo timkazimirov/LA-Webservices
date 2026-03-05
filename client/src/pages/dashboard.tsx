@@ -49,7 +49,7 @@ function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
         </div>
@@ -71,9 +71,9 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" data-testid="text-page-title">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Overview of your agency performance</p>
       </div>
 
@@ -313,7 +313,7 @@ function ClientDashboard() {
 
   if (projectsLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
         </div>
@@ -337,12 +337,12 @@ function ClientDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <ProjectRequestDialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen} />
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">
             Welcome back, {user?.fullName}
           </h1>
           <p className="text-muted-foreground text-sm mt-1" data-testid="text-page-subtitle">

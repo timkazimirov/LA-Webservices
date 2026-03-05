@@ -92,10 +92,10 @@ export default function ContractsPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Contracts</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Contracts</h1>
           <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Create and manage client contracts" : "View your contracts"}</p>
         </div>
         {isAdmin && (

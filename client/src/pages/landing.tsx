@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Globe, Code2, Paintbrush, Rocket, Languages, Infinity, DollarSign, Server,
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus,
-  HelpCircle, ChevronDown
+  HelpCircle, ChevronDown, Menu, X
 } from "lucide-react";
 import logoPath from "@assets/la-webservices-logo.png";
 import screenshotJcbb from "@assets/screenshot-1772753604831.png";
@@ -256,13 +256,24 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { href: "#services", label: "Services" },
+    { href: "#why-us", label: "Why Us" },
+    { href: "#our-work", label: "Our Work" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#testimonials", label: "Testimonials" },
+    { href: "#faq", label: "FAQ" },
+  ];
+
   return (
     <div className="min-h-screen bg-background scroll-smooth">
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg transition-all duration-300">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group" data-testid="link-landing-logo">
-              <div className="w-10 h-10 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
                 <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
               </div>
               <div>
@@ -272,27 +283,47 @@ export default function LandingPage() {
             </div>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#services" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-services">Services</a>
-            <a href="#why-us" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-why">Why Us</a>
-            <a href="#our-work" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-work">Our Work</a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-pricing">Pricing</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-testimonials">Testimonials</a>
-            <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid="link-nav-faq">FAQ</a>
+            {navLinks.map((link) => (
+              <a key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}>{link.label}</a>
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login">
-              <Button variant="ghost" size="sm" data-testid="link-nav-login">Sign In</Button>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" data-testid="link-nav-login">Sign In</Button>
             </Link>
             <Link href="/login">
-              <Button size="sm" className="transition-transform duration-200 hover:scale-105" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
+              <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
             </Link>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} data-testid="button-mobile-menu">
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg">
+            <div className="px-4 py-3 space-y-1">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="block px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  data-testid={`link-mobile-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <Link href="/login">
+                <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-signin">Sign In</button>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
-      <section className="relative py-14 md:py-20 overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5" />
-        <div className="max-w-6xl mx-auto px-6 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div className="max-w-3xl">
             <FadeIn>
               <Badge variant="secondary" className="mb-6 no-default-active-elevate">
@@ -300,14 +331,14 @@ export default function LandingPage() {
               </Badge>
             </FadeIn>
             <FadeIn delay={100}>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-4 sm:mb-6">
                 Websites that actually
                 <br />
                 <span className="text-primary">work for your business</span>
               </h1>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed mb-6 sm:mb-8 max-w-2xl">
                 We're a small Los Angeles web design team that builds custom websites in English and Spanish.
                 No offshore teams. No cookie-cutter templates. No overpriced LA agencies.
                 Just clean, fast websites that bring your local business more customers.
@@ -384,8 +415,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="services" className="py-20 border-t border-border/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="services" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">What we do</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything your business website needs</h2>
@@ -409,8 +440,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="why-us" className="py-20 bg-card/50 border-t border-border/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="why-us" className="py-12 sm:py-16 md:py-20 bg-card/50 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <FadeIn>
@@ -459,8 +490,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="our-work" className="py-20 border-t border-border/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="our-work" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Our Work</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Projects we've built</h2>
@@ -520,8 +551,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="py-20 border-t border-border/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="pricing" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Pricing</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
@@ -593,8 +624,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="testimonials" className="py-20 bg-card/50 border-t border-border/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="testimonials" className="py-12 sm:py-16 md:py-20 bg-card/50 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Testimonials</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What our clients say</h2>
@@ -620,8 +651,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="faq" className="py-20 border-t border-border/50">
-        <div className="max-w-3xl mx-auto px-6">
+      <section id="faq" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-10">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">
               <HelpCircle className="w-3 h-3 mr-1" /> FAQ
@@ -643,8 +674,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-border/50">
-        <FadeIn className="max-w-4xl mx-auto px-6 text-center">
+      <section className="py-12 sm:py-16 md:py-20 border-t border-border/50">
+        <FadeIn className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build something great?</h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             Let's talk about your project. No pressure, no obligations. Just a conversation about what you need
@@ -660,8 +691,8 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
-      <footer className="border-t border-border py-12">
-        <div className="max-w-6xl mx-auto px-6">
+      <footer className="border-t border-border py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-3">

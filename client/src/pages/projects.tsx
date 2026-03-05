@@ -114,7 +114,7 @@ function ProjectDetailView({ project, onBack }: { project: Project; onBack: () =
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <Button variant="ghost" onClick={onBack} data-testid="button-back-projects">
         <ArrowLeft className="w-4 h-4 mr-2" />Back to Projects
       </Button>
@@ -396,10 +396,10 @@ export default function ProjectsPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Projects</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Projects</h1>
           <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Manage all client projects" : "Your website projects"}</p>
         </div>
         {isAdmin && (

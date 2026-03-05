@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, MessageSquare } from "lucide-react";
+import { Send, MessageSquare, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import type { Message, User } from "@shared/schema";
@@ -119,18 +119,20 @@ export default function MessagesPage() {
     sendMutation.mutate(newMessage.trim());
   };
 
+  const showConversation = selectedUserId !== null;
+
   return (
-    <div className="p-6 h-[calc(100vh-3.5rem)]">
+    <div className="p-4 sm:p-6 h-[calc(100vh-3.5rem)]">
       <div className="flex flex-col h-full">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Messages</h1>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Messages</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isAdmin ? "Communicate with your clients" : "Send messages to the LA Webservices team"}
           </p>
         </div>
 
         <div className="flex-1 flex gap-4 min-h-0">
-          <Card className="w-72 shrink-0 flex flex-col">
+          <Card className={`md:w-72 shrink-0 flex flex-col ${showConversation ? "hidden md:flex" : "flex w-full md:w-72"}`}>
             <CardContent className="p-3 flex-1 overflow-auto">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 py-2">Conversations</p>
               <div className="space-y-1">
@@ -168,15 +170,18 @@ export default function MessagesPage() {
             </CardContent>
           </Card>
 
-          <Card className="flex-1 flex flex-col">
+          <Card className={`flex-1 flex flex-col ${!showConversation ? "hidden md:flex" : "flex"}`}>
             {selectedUserId ? (
               <>
-                <div className="p-4 border-b border-border">
+                <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => setSelectedUserId(null)} data-testid="button-back-conversations">
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
                   <p className="font-medium text-sm">
                     {contactList.find(c => c.id === selectedUserId)?.name || "Conversation"}
                   </p>
                 </div>
-                <ScrollArea className="flex-1 p-4">
+                <ScrollArea className="flex-1 p-3 sm:p-4">
                   <div className="space-y-3">
                     {convLoading ? (
                       <div className="space-y-3">
@@ -188,7 +193,7 @@ export default function MessagesPage() {
                         return (
                           <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                             <div
-                              className={`max-w-[70%] px-4 py-2.5 rounded-lg text-sm ${
+                              className={`max-w-[85%] sm:max-w-[70%] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm ${
                                 isMine
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-accent text-accent-foreground"
@@ -207,7 +212,7 @@ export default function MessagesPage() {
                     <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
-                <div className="p-4 border-t border-border">
+                <div className="p-3 sm:p-4 border-t border-border">
                   <form
                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                     className="flex gap-2"
