@@ -1,4 +1,4 @@
-import { eq, and, desc, or } from "drizzle-orm";
+import { eq, and, desc, or, lte } from "drizzle-orm";
 import { db } from "./db";
 import {
   users, projects, contracts, invoices, messages, analyticsSnapshots, projectRequests,
@@ -41,6 +41,7 @@ export interface IStorage {
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
   updateInvoice(id: string, data: Partial<Invoice>): Promise<Invoice | undefined>;
   deleteInvoice(id: string): Promise<void>;
+  getDueRecurringInvoices(): Promise<Invoice[]>;
 
   getMessages(userId: string): Promise<Message[]>;
   getConversation(user1Id: string, user2Id: string): Promise<Message[]>;
@@ -173,6 +174,16 @@ export class DatabaseStorage implements IStorage {
 
   async deleteInvoice(id: string): Promise<void> {
     await db.delete(invoices).where(eq(invoices.id, id));
+  }
+
+  async getDueRecurringInvoices(): Promise<Invoice[]> {
+    return db.select().from(invoices)
+      .where(
+        and(
+          eq(invoices.isRecurring, true),
+          lte(invoices.nextBillingDate, new Date())
+        )
+      );
   }
 
   async getMessages(userId: string): Promise<Message[]> {

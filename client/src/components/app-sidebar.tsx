@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut,
+  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut, ClipboardList,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 const adminItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
+  { title: "Requests", url: "/requests", icon: ClipboardList },
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Contracts", url: "/contracts", icon: FileText },
   { title: "Invoices", url: "/invoices", icon: Receipt },
@@ -37,6 +38,12 @@ export function AppSidebar() {
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread"],
     refetchInterval: 15000,
+  });
+
+  const { data: pendingRequests } = useQuery<any[]>({
+    queryKey: ["/api/project-requests"],
+    enabled: isAdmin,
+    refetchInterval: 30000,
   });
 
   return (
@@ -69,6 +76,11 @@ export function AppSidebar() {
                         {item.title === "Messages" && unreadData && unreadData.count > 0 && (
                           <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center no-default-active-elevate">
                             {unreadData.count}
+                          </Badge>
+                        )}
+                        {item.title === "Requests" && pendingRequests && pendingRequests.filter(r => r.status === "pending").length > 0 && (
+                          <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center no-default-active-elevate">
+                            {pendingRequests.filter(r => r.status === "pending").length}
                           </Badge>
                         )}
                       </Link>

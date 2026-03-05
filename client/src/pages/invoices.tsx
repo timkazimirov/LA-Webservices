@@ -9,10 +9,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Receipt, Search, CreditCard, CheckCircle2, DollarSign, Clock, AlertTriangle } from "lucide-react";
+import { Plus, Receipt, Search, CreditCard, CheckCircle2, DollarSign, Clock, AlertTriangle, RefreshCw, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { StripePaymentDialog } from "@/components/stripe-payment";
@@ -28,6 +30,8 @@ const invoiceSchema = z.object({
   status: z.string().default("pending"),
   dueDate: z.string().optional(),
   description: z.string().optional(),
+  isRecurring: z.boolean().default(false),
+  recurringInterval: z.string().optional(),
 });
 
 const statusConfig: Record<string, { color: string; icon: typeof CheckCircle2 }> = {
@@ -51,17 +55,23 @@ export default function InvoicesPage() {
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
-    defaultValues: { clientId: "", projectId: "", contractId: "", amount: "", status: "pending", dueDate: "", description: "" },
+    defaultValues: { clientId: "", projectId: "", contractId: "", amount: "", status: "pending", dueDate: "", description: "", isRecurring: false, recurringInterval: "monthly" },
   });
+
+  const isRecurring = form.watch("isRecurring");
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof invoiceSchema>) => {
-      const payload = {
+      const payload: Record<string, any> = {
         ...data,
         projectId: data.projectId || null,
         contractId: data.contractId || null,
         dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
       };
+      if (!data.isRecurring) {
+        payload.isRecurring = false;
+        delete payload.recurringInterval;
+      }
       const res = await apiRequest("POST", "/api/invoices", payload);
       return res.json();
     },
@@ -90,6 +100,20 @@ export default function InvoicesPage() {
     },
   });
 
+  const generateRecurringMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/invoices/generate-recurring");
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      toast({ title: `Generated ${data.generated} recurring invoice(s)` });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to generate recurring invoices", description: err.message, variant: "destructive" });
+    },
+  });
+
   const filtered = invoicesList?.filter(inv => {
     const matchesSearch = (inv.description || "").toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
@@ -98,6 +122,7 @@ export default function InvoicesPage() {
 
   const totalPending = invoicesList?.filter(i => i.status === "pending").reduce((sum, i) => sum + parseFloat(i.amount), 0) || 0;
   const totalPaid = invoicesList?.filter(i => i.status === "paid").reduce((sum, i) => sum + parseFloat(i.amount), 0) || 0;
+  const recurringCount = invoicesList?.filter(i => i.isRecurring).length || 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -106,61 +131,111 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold" data-testid="text-page-title">Invoices</h1>
           <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Manage invoices and payments" : "View and pay your invoices"}</p>
         </div>
-        {isAdmin && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-invoice"><Plus className="w-4 h-4 mr-2" />New Invoice</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Create Invoice</DialogTitle></DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit((d) => createMutation.mutate(d))} className="space-y-4">
-                  <FormField control={form.control} name="clientId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Client</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger data-testid="select-invoice-client"><SelectValue placeholder="Select client" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {clients?.map(c => <SelectItem key={c.id} value={c.id}>{c.fullName}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="projectId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Link to project" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {projectsList?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} data-testid="input-invoice-description" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField control={form.control} name="amount" render={({ field }) => (
-                      <FormItem><FormLabel>Amount ($)</FormLabel><FormControl><Input {...field} type="number" step="0.01" data-testid="input-invoice-amount" /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="dueDate" render={({ field }) => (
-                      <FormItem><FormLabel>Due Date</FormLabel><FormControl><Input {...field} type="date" data-testid="input-invoice-date" /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={createMutation.isPending} data-testid="button-submit-invoice">
-                    {createMutation.isPending ? "Creating..." : "Create Invoice"}
-                  </Button>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              onClick={() => generateRecurringMutation.mutate()}
+              disabled={generateRecurringMutation.isPending}
+              data-testid="button-generate-recurring"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              {generateRecurringMutation.isPending ? "Generating..." : "Generate Recurring"}
+            </Button>
+          )}
+          {isAdmin && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-invoice"><Plus className="w-4 h-4 mr-2" />New Invoice</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
+                <DialogHeader><DialogTitle>Create Invoice</DialogTitle></DialogHeader>
+                <ScrollArea className="flex-1 pr-4">
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit((d) => createMutation.mutate(d))} className="space-y-4 pb-2">
+                      <FormField control={form.control} name="clientId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Client</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger data-testid="select-invoice-client"><SelectValue placeholder="Select client" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              {clients?.map(c => <SelectItem key={c.id} value={c.id}>{c.fullName}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="projectId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project (Optional)</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Link to project" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              {projectsList?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="description" render={({ field }) => (
+                        <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="e.g. Monthly Website Maintenance" data-testid="input-invoice-description" /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField control={form.control} name="amount" render={({ field }) => (
+                          <FormItem><FormLabel>Amount ($)</FormLabel><FormControl><Input {...field} type="number" step="0.01" data-testid="input-invoice-amount" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="dueDate" render={({ field }) => (
+                          <FormItem><FormLabel>Due Date</FormLabel><FormControl><Input {...field} type="date" data-testid="input-invoice-date" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+
+                      <div className="border rounded-lg p-4 space-y-3">
+                        <FormField control={form.control} name="isRecurring" render={({ field }) => (
+                          <FormItem className="flex items-center justify-between gap-2">
+                            <div>
+                              <FormLabel className="text-sm font-medium">Recurring Invoice</FormLabel>
+                              <p className="text-xs text-muted-foreground">Automatically generate new invoices on schedule</p>
+                            </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-recurring" />
+                            </FormControl>
+                          </FormItem>
+                        )} />
+                        {isRecurring && (
+                          <FormField control={form.control} name="recurringInterval" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Billing Interval</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || "monthly"}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-recurring-interval">
+                                    <SelectValue placeholder="Select interval" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="monthly">Monthly</SelectItem>
+                                  <SelectItem value="quarterly">Quarterly (every 3 months)</SelectItem>
+                                  <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        )}
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={createMutation.isPending} data-testid="button-submit-invoice">
+                        {createMutation.isPending ? "Creating..." : isRecurring ? "Create Recurring Invoice" : "Create Invoice"}
+                      </Button>
+                    </form>
+                  </Form>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -191,6 +266,17 @@ export default function InvoicesPage() {
             <div>
               <p className="text-xs text-muted-foreground">Paid</p>
               <p className="text-lg font-bold" data-testid="text-paid-amount">${totalPaid.toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <RefreshCw className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Recurring</p>
+              <p className="text-lg font-bold" data-testid="text-recurring-count">{recurringCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -232,10 +318,21 @@ export default function InvoicesPage() {
                         <StatusIcon className="w-4 h-4 text-secondary-foreground" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{invoice.description || "Invoice"}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm truncate">{invoice.description || "Invoice"}</p>
+                          {invoice.isRecurring && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0" data-testid={`badge-recurring-${invoice.id}`}>
+                              <RefreshCw className="w-2.5 h-2.5 mr-1" />
+                              {invoice.recurringInterval}
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                           {invoice.dueDate && <span>Due {new Date(invoice.dueDate).toLocaleDateString()}</span>}
                           {invoice.paidAt && <span>Paid {new Date(invoice.paidAt).toLocaleDateString()}</span>}
+                          {invoice.isRecurring && invoice.nextBillingDate && (
+                            <span>Next billing: {new Date(invoice.nextBillingDate).toLocaleDateString()}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -278,19 +375,21 @@ export default function InvoicesPage() {
       )}
 
       <Dialog open={!!payingInvoice} onOpenChange={(v) => !v && setPayingInvoice(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>Pay Invoice</DialogTitle>
           </DialogHeader>
-          {payingInvoice && (
-            <StripePaymentDialog
-              invoiceId={payingInvoice.id}
-              amount={payingInvoice.amount}
-              description={payingInvoice.description || "Invoice Payment"}
-              onSuccess={() => setPayingInvoice(null)}
-              onCancel={() => setPayingInvoice(null)}
-            />
-          )}
+          <ScrollArea className="flex-1 pr-4">
+            {payingInvoice && (
+              <StripePaymentDialog
+                invoiceId={payingInvoice.id}
+                amount={payingInvoice.amount}
+                description={payingInvoice.description || "Invoice Payment"}
+                onSuccess={() => setPayingInvoice(null)}
+                onCancel={() => setPayingInvoice(null)}
+              />
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

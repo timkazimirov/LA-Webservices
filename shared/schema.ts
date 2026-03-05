@@ -53,6 +53,10 @@ export const invoices = pgTable("invoices", {
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   stripeInvoiceUrl: text("stripe_invoice_url"),
   description: text("description"),
+  isRecurring: boolean("is_recurring").default(false),
+  recurringInterval: text("recurring_interval"),
+  recurringParentId: varchar("recurring_parent_id"),
+  nextBillingDate: timestamp("next_billing_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -91,7 +95,7 @@ export const projectRequests = pgTable("project_requests", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
 export const insertContractSchema = createInsertSchema(contracts).omit({ id: true, createdAt: true, signedAt: true });
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAt: true, stripePaymentIntentId: true, stripeInvoiceUrl: true });
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAt: true, stripePaymentIntentId: true, stripeInvoiceUrl: true, recurringParentId: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true, read: true });
 export const insertAnalyticsSchema = createInsertSchema(analyticsSnapshots).omit({ id: true });
 export const insertProjectRequestSchema = createInsertSchema(projectRequests).omit({ id: true, createdAt: true, status: true, adminNotes: true });

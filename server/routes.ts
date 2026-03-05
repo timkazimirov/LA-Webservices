@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, requireAuth, requireAdmin } from "./auth";
+import { setupAuth, requireAuth, requireAdmin, hashPassword } from "./auth";
 import Stripe from "stripe";
 import { insertProjectSchema, insertContractSchema, insertInvoiceSchema, insertMessageSchema, insertProjectRequestSchema, insertAnalyticsSchema } from "@shared/schema";
 
@@ -64,12 +64,9 @@ export async function registerRoutes(
       if (existing) {
         return res.status(400).json({ message: "Username already taken" });
       }
-      const crypto = await import("crypto");
-      const salt = crypto.randomBytes(16).toString("hex");
-      const derivedKey = crypto.scryptSync(password, salt, 64).toString("hex");
-      const hashedPassword = `${salt}.${derivedKey}`;
+      const hashedPw = await hashPassword(password);
       const user = await storage.createUser({
-        username, password: hashedPassword, email, fullName,
+        username, password: hashedPw, email, fullName,
         role: "client", company: company || null, phone: phone || null,
         clientStage: clientStage || "potential",
       });
@@ -216,11 +213,63 @@ export async function registerRoutes(
       if (body.dueDate && typeof body.dueDate === "string") {
         body.dueDate = new Date(body.dueDate);
       }
+      if (body.nextBillingDate && typeof body.nextBillingDate === "string") {
+        body.nextBillingDate = new Date(body.nextBillingDate);
+      }
+      if (body.isRecurring && body.recurringInterval && !body.nextBillingDate) {
+        const now = new Date();
+        const interval = body.recurringInterval;
+        if (interval === "monthly") now.setMonth(now.getMonth() + 1);
+        else if (interval === "quarterly") now.setMonth(now.getMonth() + 3);
+        else if (interval === "yearly") now.setFullYear(now.getFullYear() + 1);
+        body.nextBillingDate = now;
+      }
       const data = insertInvoiceSchema.parse(body);
       const invoice = await storage.createInvoice(data);
       res.status(201).json(invoice);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/invoices/generate-recurring", requireAdmin, async (_req, res) => {
+    try {
+      const dueInvoices = await storage.getDueRecurringInvoices();
+      const generated: any[] = [];
+
+      for (const parent of dueInvoices) {
+        const interval = parent.recurringInterval || "monthly";
+        const baseDate = parent.nextBillingDate ? new Date(parent.nextBillingDate) : new Date();
+
+        const dueDate = new Date(baseDate);
+        dueDate.setDate(dueDate.getDate() + 30);
+
+        const newInvoice = await storage.createInvoice({
+          clientId: parent.clientId,
+          projectId: parent.projectId,
+          contractId: parent.contractId,
+          amount: parent.amount,
+          description: parent.description || "Recurring Invoice",
+          dueDate,
+          isRecurring: false,
+          status: "pending",
+        });
+
+        const nextBilling = new Date(baseDate);
+        if (interval === "monthly") nextBilling.setMonth(nextBilling.getMonth() + 1);
+        else if (interval === "quarterly") nextBilling.setMonth(nextBilling.getMonth() + 3);
+        else if (interval === "yearly") nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+
+        await storage.updateInvoice(parent.id, {
+          nextBillingDate: nextBilling,
+        });
+
+        generated.push(newInvoice);
+      }
+
+      res.json({ generated: generated.length, invoices: generated });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
     }
   });
 

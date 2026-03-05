@@ -17,6 +17,7 @@ import ContractsPage from "@/pages/contracts";
 import InvoicesPage from "@/pages/invoices";
 import MessagesPage from "@/pages/messages";
 import AnalyticsPage from "@/pages/analytics";
+import ProjectRequestsPage from "@/pages/project-requests";
 
 function AuthenticatedLayout() {
   const { isAdmin } = useAuth();
@@ -41,6 +42,7 @@ function AuthenticatedLayout() {
               <Route path="/">{() => <Redirect to="/dashboard" />}</Route>
               {isAdmin && <Route path="/clients" component={ClientsPage} />}
               {isAdmin && <Route path="/clients/:id" component={ClientsPage} />}
+              {isAdmin && <Route path="/requests" component={ProjectRequestsPage} />}
               <Route path="/projects" component={ProjectsPage} />
               <Route path="/contracts" component={ContractsPage} />
               <Route path="/invoices" component={InvoicesPage} />
