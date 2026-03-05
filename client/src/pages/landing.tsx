@@ -9,6 +9,9 @@ import {
   HelpCircle, ChevronDown
 } from "lucide-react";
 import logoPath from "@assets/la-webservices-logo.png";
+import screenshotJcbb from "@assets/screenshot-1772753604831.png";
+import screenshotTk from "@assets/screenshot-1772753624879.png";
+import screenshotMining from "@assets/screenshot-1772753687145.png";
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -466,84 +469,53 @@ export default function LandingPage() {
             </p>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
-              <div className="h-44 bg-gradient-to-br from-primary/10 to-chart-2/10 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
-                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="h-2 rounded bg-primary/20 w-2/3" />
-                    <div className="h-2 rounded bg-muted w-full" />
-                    <div className="h-2 rounded bg-muted w-4/5" />
-                    <div className="h-5 rounded bg-primary/15 w-1/4 mt-2" />
-                  </div>
+            <a href="https://jcbbconstruction.replit.app/" target="_blank" rel="noopener noreferrer" data-testid="link-work-1">
+              <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer group">
+                <div className="h-48 overflow-hidden relative">
+                  <img src={screenshotJcbb} alt="JCBB Construction website" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
-              </div>
-              <CardContent className="p-5">
-                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Construction</Badge>
-                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-1">JCBB Construction</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Bilingual company website with project gallery, service pages, and lead capture form. Built to drive local SEO in Los Angeles.</p>
-              </CardContent>
-            </Card>
+                <CardContent className="p-5">
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Construction</Badge>
+                  <h3 className="font-semibold text-sm mb-1">JCBB Construction</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Bilingual contractor website with project gallery, service pages, and lead capture. Built for LA local SEO with full English/Spanish support.</p>
+                  <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
+                    <Globe className="w-3 h-3" />jcbbconstruction.replit.app
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
 
-            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
-              <div className="h-44 bg-gradient-to-br from-chart-2/10 to-chart-3/10 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
-                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="h-2 rounded bg-chart-2/20 w-1/2" />
-                    <div className="flex gap-1">
-                      <div className="h-6 rounded bg-muted w-1/3" />
-                      <div className="h-6 rounded bg-muted w-1/3" />
-                      <div className="h-6 rounded bg-muted w-1/3" />
-                    </div>
-                    <div className="h-2 rounded bg-muted w-full" />
-                    <div className="h-5 rounded bg-chart-2/15 w-1/3 mt-1" />
-                  </div>
+            <a href="https://timkazimirov.com/" target="_blank" rel="noopener noreferrer" data-testid="link-work-2">
+              <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer group">
+                <div className="h-48 overflow-hidden relative">
+                  <img src={screenshotTk} alt="Timothy Kazimirov personal website" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
-              </div>
-              <CardContent className="p-5">
-                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Restaurant</Badge>
-                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-2">Sabor Latino Kitchen</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Full bilingual restaurant site with online menu, ordering integration, and reservation system. English and Spanish content throughout.</p>
-              </CardContent>
-            </Card>
+                <CardContent className="p-5">
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Personal</Badge>
+                  <h3 className="font-semibold text-sm mb-1">Timothy Kazimirov</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Clean, modern personal website with portfolio, blog, and live data integrations. Custom design with commodity ticker and project showcases.</p>
+                  <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
+                    <Globe className="w-3 h-3" />timkazimirov.com
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
 
-            <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default group">
-              <div className="h-44 bg-gradient-to-br from-chart-4/10 to-primary/10 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
-                <div className="w-3/4 h-32 rounded-t-lg bg-card border border-border/50 shadow-lg p-3 transform group-hover:scale-105 transition-transform duration-500 relative z-0">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-destructive/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-4/60" />
-                    <div className="w-2 h-2 rounded-full bg-chart-2/60" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="h-2 rounded bg-chart-4/20 w-3/4" />
-                    <div className="h-2 rounded bg-muted w-full" />
-                    <div className="flex gap-1 mt-1">
-                      <div className="h-8 rounded bg-chart-4/10 flex-1" />
-                      <div className="h-8 rounded bg-primary/10 flex-1" />
-                    </div>
-                    <div className="h-2 rounded bg-muted w-2/3" />
-                  </div>
+            <a href="https://miningriskmodeler.replit.app/" target="_blank" rel="noopener noreferrer" data-testid="link-work-3">
+              <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer group">
+                <div className="h-48 overflow-hidden relative">
+                  <img src={screenshotMining} alt="Mining Risk Modeler web app" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
-              </div>
-              <CardContent className="p-5">
-                <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Home Services</Badge>
-                <h3 className="font-semibold text-sm mb-1" data-testid="text-work-3">Pacific Plumbing Co.</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Service-focused website with online booking, service area maps, and customer review integration. Optimized for local search rankings.</p>
-              </CardContent>
-            </Card>
+                <CardContent className="p-5">
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Financial</Badge>
+                  <h3 className="font-semibold text-sm mb-1">Mining Risk Modeler</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Full-stack financial analytics platform with interactive risk heatmaps, jurisdiction rankings, AI analyst, and rate calculators.</p>
+                  <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
+                    <Globe className="w-3 h-3" />miningriskmodeler.replit.app
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
           </StaggerGrid>
         </div>
       </section>
