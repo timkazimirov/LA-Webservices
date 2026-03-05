@@ -212,7 +212,11 @@ export async function registerRoutes(
 
   app.post("/api/invoices", requireAdmin, async (req, res) => {
     try {
-      const data = insertInvoiceSchema.parse(req.body);
+      const body = { ...req.body };
+      if (body.dueDate && typeof body.dueDate === "string") {
+        body.dueDate = new Date(body.dueDate);
+      }
+      const data = insertInvoiceSchema.parse(body);
       const invoice = await storage.createInvoice(data);
       res.status(201).json(invoice);
     } catch (err: any) {
