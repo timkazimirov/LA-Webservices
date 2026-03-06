@@ -20,20 +20,20 @@ function StatCard({ title, value, icon: Icon, description, color }: {
   title: string; value: string | number; icon: any; description?: string; color?: string;
 }) {
   return (
-    <div className="glass-card rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-      <div className="p-5">
+    <Card>
+      <CardContent className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
-            <p className="text-2xl font-bold mt-1 tracking-tight" data-testid={`stat-${title.toLowerCase().replace(/\s/g, "-")}`}>{value}</p>
+            <p className="text-2xl font-bold mt-1" data-testid={`stat-${title.toLowerCase().replace(/\s/g, "-")}`}>{value}</p>
             {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
           </div>
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm ${color || "bg-primary/10 text-primary"}`}>
+          <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${color || "bg-primary/10 text-primary"}`}>
             <Icon className="w-4 h-4" />
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -73,7 +73,7 @@ function AdminDashboard() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-page-title">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Overview of your agency performance</p>
       </div>
 
@@ -363,42 +363,42 @@ function ClientDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card rounded-xl hover:shadow-lg cursor-pointer transition-all duration-300 hover:-translate-y-0.5" onClick={() => setRequestDialogOpen(true)} data-testid="card-quick-request">
-          <div className="p-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary shadow-sm">
+        <Card className="hover-elevate cursor-pointer" onClick={() => setRequestDialogOpen(true)} data-testid="card-quick-request">
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-primary/10 text-primary">
               <Plus className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-sm font-medium tracking-tight">Request Project</p>
+              <p className="text-sm font-medium">Request Project</p>
               <p className="text-xs text-muted-foreground">Start a new project</p>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         <Link href="/messages" data-testid="link-quick-messages">
-          <div className="glass-card rounded-xl hover:shadow-lg cursor-pointer transition-all duration-300 hover:-translate-y-0.5">
-            <div className="p-5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-chart-4/10 text-chart-4 dark:bg-chart-4/20 shadow-sm">
+          <Card className="hover-elevate cursor-pointer">
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-chart-4/10 text-chart-4 dark:bg-chart-4/20">
                 <MessageSquare className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-medium tracking-tight">Send Message</p>
+                <p className="text-sm font-medium">Send Message</p>
                 <p className="text-xs text-muted-foreground">Chat with your team</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </Link>
         <Link href="/invoices" data-testid="link-quick-invoices">
-          <div className="glass-card rounded-xl hover:shadow-lg cursor-pointer transition-all duration-300 hover:-translate-y-0.5">
-            <div className="p-5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-chart-2/10 text-chart-2 dark:bg-chart-2/20 shadow-sm">
+          <Card className="hover-elevate cursor-pointer">
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-chart-2/10 text-chart-2 dark:bg-chart-2/20">
                 <Receipt className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-medium tracking-tight">View Invoices</p>
+                <p className="text-sm font-medium">View Invoices</p>
                 <p className="text-xs text-muted-foreground">Manage payments</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </Link>
       </div>
 
