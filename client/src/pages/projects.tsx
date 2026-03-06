@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Globe, ExternalLink, FolderKanban, ClipboardList, DollarSign, Calendar, Save, BarChart3, ArrowLeft } from "lucide-react";
+import { Plus, Search, Globe, ExternalLink, FolderKanban, ClipboardList, DollarSign, Calendar, Save, BarChart3, ArrowLeft, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import type { Project, ProjectRequest, User, AnalyticsSnapshot } from "@shared/schema";
@@ -337,6 +337,7 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -362,6 +363,20 @@ export default function ProjectsPage() {
     },
     onError: (err: any) => {
       toast({ title: "Failed to create project", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/projects/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setDeleteTarget(null);
+      toast({ title: "Project deleted" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to delete project", description: err.message, variant: "destructive" });
     },
   });
 
@@ -397,6 +412,21 @@ export default function ProjectsPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+            <DialogDescription>Are you sure you want to delete "{deleteTarget?.name}"? This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} data-testid="button-confirm-delete-project">
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Projects</h1>
@@ -520,9 +550,22 @@ export default function ProjectsPage() {
                   {project.description && (
                     <p className="text-xs text-muted-foreground mt-3 line-clamp-2">{project.description}</p>
                   )}
-                  <p className="text-[10px] text-muted-foreground mt-3 pt-3 border-t border-border/50">
-                    {project.isRequest ? "Requested" : "Created"} {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
-                  </p>
+                  <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground">
+                      {project.isRequest ? "Requested" : "Created"} {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "Recently"}
+                    </p>
+                    {isAdmin && !project.isRequest && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive h-6 w-6 p-0"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(project as Project); }}
+                        data-testid={`button-delete-project-${project.id}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,7 @@ import { z } from "zod";
 import {
   Plus, Search, Mail, Phone, Building2, Users, ArrowLeft,
   Globe, Calendar, Send, FileText, FolderOpen, MessageSquare,
-  ExternalLink, Save, BarChart3
+  ExternalLink, Save, BarChart3, Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Project, Invoice, Contract, ProjectRequest, Message, AnalyticsSnapshot } from "@shared/schema";
@@ -84,6 +84,7 @@ function ListView() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
+  const [deleteTarget, setDeleteTarget] = useState<SafeUser | null>(null);
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
@@ -110,6 +111,20 @@ function ListView() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/clients/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      setDeleteTarget(null);
+      toast({ title: "Client deleted" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to delete client", description: err.message, variant: "destructive" });
+    },
+  });
+
   const filtered = clients?.filter(c => {
     const matchesSearch = !search ||
       c.fullName.toLowerCase().includes(search.toLowerCase()) ||
@@ -128,6 +143,21 @@ function ListView() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Client</DialogTitle>
+            <DialogDescription>Are you sure you want to delete "{deleteTarget?.fullName}"? This will also remove their projects, contracts, and invoices.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} data-testid="button-confirm-delete-client">
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Clients</h1>
@@ -272,10 +302,19 @@ function ListView() {
                     </div>
                   )}
                 </div>
-                <div className="mt-3 pt-3 border-t border-border/50">
+                <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between">
                   <p className="text-[10px] text-muted-foreground" data-testid={`text-client-joined-${client.id}`}>
                     Joined {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "Recently"}
                   </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive h-6 w-6 p-0"
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(client); }}
+                    data-testid={`button-delete-client-${client.id}`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

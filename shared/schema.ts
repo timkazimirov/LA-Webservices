@@ -37,6 +37,8 @@ export const contracts = pgTable("contracts", {
   description: text("description"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").notNull().default("draft"),
+  pdfUrl: text("pdf_url"),
+  signedByClient: boolean("signed_by_client").default(false),
   signedAt: timestamp("signed_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });

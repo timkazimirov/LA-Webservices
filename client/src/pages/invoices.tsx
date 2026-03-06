@@ -4,7 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Receipt, Search, CreditCard, CheckCircle2, DollarSign, Clock, AlertTriangle, RefreshCw, RotateCcw } from "lucide-react";
+import { Plus, Receipt, Search, CreditCard, CheckCircle2, DollarSign, Clock, AlertTriangle, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { StripePaymentDialog } from "@/components/stripe-payment";
@@ -46,6 +46,7 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -114,6 +115,20 @@ export default function InvoicesPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/invoices/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      setDeleteTarget(null);
+      toast({ title: "Invoice deleted" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to delete invoice", description: err.message, variant: "destructive" });
+    },
+  });
+
   const filtered = invoicesList?.filter(inv => {
     const matchesSearch = (inv.description || "").toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
@@ -126,6 +141,21 @@ export default function InvoicesPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Invoice</DialogTitle>
+            <DialogDescription>Are you sure you want to delete this invoice for ${deleteTarget ? parseFloat(deleteTarget.amount).toLocaleString() : ""}? This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} data-testid="button-confirm-delete-invoice">
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Invoices</h1>
@@ -357,6 +387,17 @@ export default function InvoicesPage() {
                           data-testid={`button-mark-paid-${invoice.id}`}
                         >
                           <CheckCircle2 className="w-3 h-3 mr-1" />Mark Paid
+                        </Button>
+                      )}
+                      {isAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive h-7 w-7 p-0"
+                          onClick={() => setDeleteTarget(invoice)}
+                          data-testid={`button-delete-invoice-${invoice.id}`}
+                        >
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       )}
                     </div>

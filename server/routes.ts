@@ -3,7 +3,24 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireAdmin, hashPassword } from "./auth";
 import Stripe from "stripe";
+import multer from "multer";
+import path from "path";
 import { insertProjectSchema, insertContractSchema, insertInvoiceSchema, insertMessageSchema, insertProjectRequestSchema, insertAnalyticsSchema } from "@shared/schema";
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: "uploads/",
+    filename: (_req, file, cb) => {
+      const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, unique + path.extname(file.originalname));
+    },
+  }),
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "application/pdf") cb(null, true);
+    else cb(new Error("Only PDF files are allowed"));
+  },
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-04-30.basil" as any });
 
@@ -49,6 +66,15 @@ export async function registerRoutes(
       if (!updated) return res.status(404).json({ message: "Client not found" });
       const { password, ...safe } = updated;
       res.json(safe);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/clients/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteUser(req.params.id);
+      res.json({ message: "Client deleted" });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
@@ -502,6 +528,45 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/project-requests/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteProjectRequest(req.params.id);
+      res.json({ message: "Request deleted" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/contracts/:id/upload-pdf", requireAdmin, upload.single("pdf"), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No PDF file uploaded" });
+      const pdfUrl = `/uploads/${req.file.filename}`;
+      const contract = await storage.updateContract(req.params.id, { pdfUrl, status: "sent" } as any);
+      if (!contract) return res.status(404).json({ message: "Contract not found" });
+      res.json(contract);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/contracts/:id/sign", requireAuth, async (req, res) => {
+    try {
+      const contract = await storage.getContract(req.params.id);
+      if (!contract) return res.status(404).json({ message: "Contract not found" });
+      if (req.user!.role !== "admin" && contract.clientId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const updated = await storage.updateContract(req.params.id, {
+        signedByClient: true,
+        status: "signed",
+        signedAt: new Date(),
+      } as any);
+      res.json(updated);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.get("/api/dashboard/stats", requireAdmin, async (req, res) => {
     try {
       const clients = await storage.getClientUsers();
@@ -574,6 +639,9 @@ export async function registerRoutes(
 </urlset>`
     );
   });
+
+  const express = await import("express");
+  app.use("/uploads", express.default.static("uploads"));
 
   return httpServer;
 }

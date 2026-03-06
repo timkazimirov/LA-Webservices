@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, FileText, Search } from "lucide-react";
+import { Plus, FileText, Search, Upload, Download, CheckCircle2, Trash2, PenLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import type { Contract, Project, User } from "@shared/schema";
@@ -46,8 +46,11 @@ const statusColor: Record<string, string> = {
 export default function ContractsPage() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Contract | null>(null);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingContractId, setUploadingContractId] = useState<string | null>(null);
 
   const { data: contractsList, isLoading } = useQuery<Contract[]>({ queryKey: ["/api/contracts"] });
   const { data: clients } = useQuery<SafeUser[]>({ queryKey: ["/api/clients"], enabled: isAdmin });
@@ -87,16 +90,91 @@ export default function ContractsPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/contracts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contracts"] });
+      setDeleteTarget(null);
+      toast({ title: "Contract deleted" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to delete contract", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const uploadPdfMutation = useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("pdf", file);
+      const res = await fetch(`/api/contracts/${id}/upload-pdf`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error((await res.json()).message || "Upload failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contracts"] });
+      setUploadingContractId(null);
+      toast({ title: "PDF uploaded and contract sent to client" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to upload PDF", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const signMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("POST", `/api/contracts/${id}/sign`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contracts"] });
+      toast({ title: "Contract signed successfully" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to sign contract", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && uploadingContractId) {
+      uploadPdfMutation.mutate({ id: uploadingContractId, file });
+    }
+    e.target.value = "";
+  };
+
   const filtered = contractsList?.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <input type="file" ref={fileInputRef} accept=".pdf" className="hidden" onChange={handleFileChange} />
+
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Contract</DialogTitle>
+            <DialogDescription>Are you sure you want to delete "{deleteTarget?.title}"? This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} data-testid="button-confirm-delete-contract">
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Contracts</h1>
-          <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Create and manage client contracts" : "View your contracts"}</p>
+          <p className="text-muted-foreground text-sm mt-1">{isAdmin ? "Create and manage client contracts" : "View and sign your contracts"}</p>
         </div>
         {isAdmin && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -188,8 +266,66 @@ export default function ContractsPage() {
                       )}
                       <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                         <span className="font-semibold text-foreground text-sm">${parseFloat(contract.amount).toLocaleString()}</span>
+                        {contract.signedByClient && <span className="flex items-center gap-1 text-chart-2"><CheckCircle2 className="w-3 h-3" />Client signed</span>}
                         {contract.signedAt && <span>Signed {new Date(contract.signedAt).toLocaleDateString()}</span>}
                         <span>Created {contract.createdAt ? new Date(contract.createdAt).toLocaleDateString() : "Recently"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-3 flex-wrap">
+                        {contract.pdfUrl && (
+                          <a href={contract.pdfUrl} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" size="sm" data-testid={`button-view-pdf-${contract.id}`}>
+                              <Download className="w-3 h-3 mr-1.5" />View PDF
+                            </Button>
+                          </a>
+                        )}
+                        {isAdmin && !contract.pdfUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { setUploadingContractId(contract.id); fileInputRef.current?.click(); }}
+                            disabled={uploadPdfMutation.isPending}
+                            data-testid={`button-upload-pdf-${contract.id}`}
+                          >
+                            <Upload className="w-3 h-3 mr-1.5" />{uploadPdfMutation.isPending && uploadingContractId === contract.id ? "Uploading..." : "Upload PDF"}
+                          </Button>
+                        )}
+                        {isAdmin && contract.pdfUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { setUploadingContractId(contract.id); fileInputRef.current?.click(); }}
+                            disabled={uploadPdfMutation.isPending}
+                            data-testid={`button-replace-pdf-${contract.id}`}
+                          >
+                            <Upload className="w-3 h-3 mr-1.5" />Replace PDF
+                          </Button>
+                        )}
+                        {!isAdmin && contract.pdfUrl && !contract.signedByClient && (contract.status === "sent" || contract.status === "draft") && (
+                          <Button
+                            size="sm"
+                            onClick={() => signMutation.mutate(contract.id)}
+                            disabled={signMutation.isPending}
+                            data-testid={`button-sign-contract-${contract.id}`}
+                          >
+                            <PenLine className="w-3 h-3 mr-1.5" />{signMutation.isPending ? "Signing..." : "Sign Contract"}
+                          </Button>
+                        )}
+                        {!isAdmin && contract.signedByClient && (
+                          <Badge variant="secondary" className="bg-chart-2/10 text-chart-2 text-xs">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />Signed
+                          </Badge>
+                        )}
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTarget(contract)}
+                            data-testid={`button-delete-contract-${contract.id}`}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

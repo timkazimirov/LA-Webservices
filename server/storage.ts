@@ -1,4 +1,4 @@
-import { eq, and, desc, or, lte } from "drizzle-orm";
+import { eq, and, desc, or, lte, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   users, projects, contracts, invoices, messages, analyticsSnapshots, projectRequests,
@@ -32,7 +32,7 @@ export interface IStorage {
   getContractsByClient(clientId: string): Promise<Contract[]>;
   getContract(id: string): Promise<Contract | undefined>;
   createContract(contract: InsertContract): Promise<Contract>;
-  updateContract(id: string, data: Partial<InsertContract & { signedAt: Date | null }>): Promise<Contract | undefined>;
+  updateContract(id: string, data: Partial<InsertContract & { signedAt: Date | null; pdfUrl: string; signedByClient: boolean }>): Promise<Contract | undefined>;
   deleteContract(id: string): Promise<void>;
 
   getInvoices(): Promise<Invoice[]>;
@@ -56,6 +56,7 @@ export interface IStorage {
   getProjectRequestsByClient(clientId: string): Promise<ProjectRequest[]>;
   createProjectRequest(req: InsertProjectRequest): Promise<ProjectRequest>;
   updateProjectRequest(id: string, data: Partial<ProjectRequest>): Promise<ProjectRequest | undefined>;
+  deleteProjectRequest(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -92,6 +93,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<void> {
+    await db.delete(messages).where(
+      sql`${messages.senderId} = ${id} OR ${messages.receiverId} = ${id}`
+    );
+    await db.delete(invoices).where(eq(invoices.clientId, id));
+    await db.delete(contracts).where(eq(contracts.clientId, id));
+    const userProjects = await db.select({ id: projects.id }).from(projects).where(eq(projects.clientId, id));
+    for (const p of userProjects) {
+      await db.delete(analyticsSnapshots).where(eq(analyticsSnapshots.projectId, p.id));
+    }
+    await db.delete(projects).where(eq(projects.clientId, id));
+    await db.delete(projectRequests).where(eq(projectRequests.clientId, id));
     await db.delete(users).where(eq(users.id, id));
   }
 
@@ -140,7 +152,7 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async updateContract(id: string, data: Partial<InsertContract & { signedAt: Date | null }>): Promise<Contract | undefined> {
+  async updateContract(id: string, data: Partial<InsertContract & { signedAt: Date | null; pdfUrl: string; signedByClient: boolean }>): Promise<Contract | undefined> {
     const [updated] = await db.update(contracts).set(data).where(eq(contracts.id, id)).returning();
     return updated;
   }
@@ -249,6 +261,10 @@ export class DatabaseStorage implements IStorage {
   async updateProjectRequest(id: string, data: Partial<ProjectRequest>): Promise<ProjectRequest | undefined> {
     const [updated] = await db.update(projectRequests).set(data).where(eq(projectRequests.id, id)).returning();
     return updated;
+  }
+
+  async deleteProjectRequest(id: string): Promise<void> {
+    await db.delete(projectRequests).where(eq(projectRequests.id, id));
   }
 }
 

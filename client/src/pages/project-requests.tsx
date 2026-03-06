@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ClipboardList, Search, Clock, CheckCircle2, XCircle, DollarSign, Calendar, User, MessageSquare } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ClipboardList, Search, Clock, CheckCircle2, XCircle, DollarSign, Calendar, User, MessageSquare, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ProjectRequest, User as UserType } from "@shared/schema";
 
@@ -25,6 +25,7 @@ export default function ProjectRequestsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState<(ProjectRequest & { clientName?: string }) | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<ProjectRequest | null>(null);
   const { toast } = useToast();
 
   const { data: requests, isLoading } = useQuery<ProjectRequest[]>({ queryKey: ["/api/project-requests"] });
@@ -52,6 +53,21 @@ export default function ProjectRequestsPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/project-requests/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      setDeleteTarget(null);
+      toast({ title: "Request deleted" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    },
+  });
+
   const filtered = requests?.filter(req => {
     const client = clientMap.get(req.clientId);
     const matchesSearch =
@@ -71,6 +87,21 @@ export default function ProjectRequestsPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Request</DialogTitle>
+            <DialogDescription>Are you sure you want to delete "{deleteTarget?.title}"? This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending} data-testid="button-confirm-delete-request">
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div>
         <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">Project Requests</h1>
         <p className="text-muted-foreground text-sm mt-1">Review and manage incoming project requests from clients</p>
@@ -163,33 +194,44 @@ export default function ProjectRequestsPage() {
                         )}
                       </div>
                     </div>
-                    {req.status === "pending" && (
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateMutation.mutate({ id: req.id, status: "approved" });
-                          }}
-                          disabled={updateMutation.isPending}
-                          data-testid={`button-approve-${req.id}`}
-                        >
-                          <CheckCircle2 className="w-3 h-3 mr-1" />Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateMutation.mutate({ id: req.id, status: "rejected" });
-                          }}
-                          disabled={updateMutation.isPending}
-                          data-testid={`button-reject-${req.id}`}
-                        >
-                          <XCircle className="w-3 h-3 mr-1" />Reject
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {req.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateMutation.mutate({ id: req.id, status: "approved" });
+                            }}
+                            disabled={updateMutation.isPending}
+                            data-testid={`button-approve-${req.id}`}
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateMutation.mutate({ id: req.id, status: "rejected" });
+                            }}
+                            disabled={updateMutation.isPending}
+                            data-testid={`button-reject-${req.id}`}
+                          >
+                            <XCircle className="w-3 h-3 mr-1" />Reject
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(req); }}
+                        data-testid={`button-delete-request-${req.id}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -27,7 +27,7 @@ A professional website agency management platform for managing clients, projects
 
 - **Users**: Admin and client roles with session-based auth (scrypt password hashing). Clients have clientStage (potential/negotiation/active), websiteUrl, and notes fields
 - **Projects**: Website projects linked to clients with status tracking
-- **Contracts**: Agreements tied to clients/projects with lifecycle statuses (draft/sent/signed/completed)
+- **Contracts**: Agreements tied to clients/projects with lifecycle statuses (draft/sent/signed/completed), PDF upload (pdfUrl) and client signing (signedByClient)
 - **Invoices**: Payment tracking with Stripe payment intent integration. Supports recurring invoices with isRecurring, recurringInterval (monthly/quarterly/yearly), and nextBillingDate fields
 - **Messages**: Real-time messaging between admin and clients
 - **Analytics Snapshots**: Website performance data (visitors, page views, bounce rate, session duration)
@@ -41,6 +41,8 @@ A professional website agency management platform for managing clients, projects
 - **Admin Project Detail**: Admin clicks any project card to open detail view with two tabs: Details (edit name, domain, status, notes) and Analytics (add/view snapshots). Analytics data added here flows directly to client's Analytics page
 - **Recurring Invoices**: Admin creates recurring invoices with monthly/quarterly/yearly intervals; "Generate Recurring" button creates new pending invoices when billing date is due; parent invoice advances to next cycle
 - **Stripe Payments**: Client clicks "Pay Now" → scrollable payment dialog with Stripe Elements → payment confirmed → invoice marked paid
+- **Delete Operations**: Admin can delete clients, projects, contracts, invoices, and project requests with confirmation dialogs
+- **Contract PDF**: Admin uploads PDF contracts; clients can view PDFs and sign contracts digitally. Uploaded via multer to /uploads/ directory
 - **Messaging**: Clients automatically see admin contacts; admins see all clients. Real-time polling
 - **SEO**: Comprehensive local SEO for Los Angeles with structured data (JSON-LD), geo-targeting, FAQ section, sitemap, robots.txt
 - **Animations**: Scroll-triggered fade-in animations, staggered grid reveals, hover transitions on landing page
