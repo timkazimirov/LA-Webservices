@@ -93,5 +93,5 @@ Flow: Client clicks "Pay Now" on invoice -> PaymentIntent created server-side ->
 ## Branding
 
 - Name: LA Webservices
-- Logo: attached_assets/la-webservices-logo.png (used on landing page, login page, footer only - NOT in sidebar)
+- Logo: attached_assets/la-webservices-logo.svg (SVG, used on landing page, login page, footer only - NOT in sidebar). PNG version also exists at attached_assets/la-webservices-logo.png
 - Sidebar uses text "LA" badge instead of logo image

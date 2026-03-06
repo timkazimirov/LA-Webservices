@@ -8,7 +8,7 @@ import {
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus,
   HelpCircle, ChevronDown, Menu, X
 } from "lucide-react";
-import logoPath from "@assets/la-webservices-logo.png";
+import logoPath from "@assets/la-webservices-logo.svg";
 import screenshotJcbb from "@assets/screenshot-1772753604831.png";
 import screenshotTk from "@assets/screenshot-1772753624879.png";
 import screenshotMining from "@assets/screenshot-1772753687145.png";
