@@ -23,6 +23,7 @@ A professional website agency management platform for managing clients, projects
 - `/messages` - Real-time messaging between admins and clients
 - `/analytics` - Client-only analytics dashboard
 - `/call` - Call us page with phone number (775) 409-5052 and contact info
+- `/traffic` - Admin-only real-time site traffic dashboard with charts and project breakdown
 
 ## Data Models
 
@@ -40,6 +41,7 @@ A professional website agency management platform for managing clients, projects
 - **Client Profiles**: Click on any client to see their full profile with projects, messages, invoices, and notes
 - **Project Requests**: Clients submit requests from dashboard; admin sees them on /requests page with approve/reject/notes; badge in sidebar shows pending count. Requests also appear on client's My Projects page with "requested" status badge. Approved requests auto-create real projects
 - **Admin Project Detail**: Admin clicks any project card to open detail view with two tabs: Details (edit name, domain, status, notes) and Analytics (add/view snapshots). Analytics data added here flows directly to client's Analytics page
+- **Site Traffic Dashboard**: Admin-only real-time traffic overview with auto-refreshing data (30s interval), area/line/bar charts (visitors, page views, bounce rate, traffic by project), stat cards with period-over-period comparison, project and time range filtering, and a detailed project breakdown table
 - **Recurring Invoices**: Admin creates recurring invoices with monthly/quarterly/yearly intervals; "Generate Recurring" button creates new pending invoices when billing date is due; parent invoice advances to next cycle
 - **Stripe Payments**: Client clicks "Pay Now" → scrollable payment dialog with Stripe Elements → payment confirmed → invoice marked paid
 - **Delete Operations**: Admin can delete clients, projects, contracts, invoices, and project requests with confirmation dialogs

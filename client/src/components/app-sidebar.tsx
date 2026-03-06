@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import {
-  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut, ClipboardList, Globe,
+  LayoutDashboard, Users, FolderKanban, FileText, Receipt, MessageSquare, BarChart3, LogOut, ClipboardList, Globe, Activity,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -19,6 +19,7 @@ const adminItems = [
   { title: "Contracts", url: "/contracts", icon: FileText },
   { title: "Invoices", url: "/invoices", icon: Receipt },
   { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "Site Traffic", url: "/traffic", icon: Activity },
 ];
 
 const clientItems = [

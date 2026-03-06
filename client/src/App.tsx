@@ -11,6 +11,7 @@ import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import LandingPage from "@/pages/landing";
 import CallPage from "@/pages/call";
+import SiteTrafficPage from "@/pages/site-traffic";
 import Dashboard from "@/pages/dashboard";
 import ClientsPage from "@/pages/clients";
 import ProjectsPage from "@/pages/projects";
@@ -43,6 +44,7 @@ function AuthenticatedLayout() {
               {isAdmin && <Route path="/clients" component={ClientsPage} />}
               {isAdmin && <Route path="/clients/:id" component={ClientsPage} />}
               {isAdmin && <Route path="/requests" component={ProjectRequestsPage} />}
+              {isAdmin && <Route path="/traffic" component={SiteTrafficPage} />}
               <Route path="/projects" component={ProjectsPage} />
               <Route path="/contracts" component={ContractsPage} />
               <Route path="/invoices" component={InvoicesPage} />

@@ -50,6 +50,7 @@ export interface IStorage {
   getUnreadCount(userId: string): Promise<number>;
 
   getAnalytics(projectId: string): Promise<AnalyticsSnapshot[]>;
+  getAllAnalytics(): Promise<AnalyticsSnapshot[]>;
   createAnalytics(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot>;
 
   getProjectRequests(): Promise<ProjectRequest[]>;
@@ -236,6 +237,11 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(analyticsSnapshots)
       .where(eq(analyticsSnapshots.projectId, projectId))
       .orderBy(analyticsSnapshots.date);
+  }
+
+  async getAllAnalytics(): Promise<AnalyticsSnapshot[]> {
+    return db.select().from(analyticsSnapshots)
+      .orderBy(desc(analyticsSnapshots.date));
   }
 
   async createAnalytics(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot> {

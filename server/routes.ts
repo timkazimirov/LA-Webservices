@@ -442,6 +442,15 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/analytics/all", requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getAllAnalytics();
+      res.json(analytics);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.get("/api/analytics/:projectId", requireAuth, async (req, res) => {
     try {
       const project = await storage.getProject(req.params.projectId);
