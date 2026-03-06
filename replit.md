@@ -11,7 +11,7 @@ A professional website agency management platform for managing clients, projects
 
 ## Routes
 
-- `/` - Public landing page (unauthenticated) or redirects to /dashboard (authenticated)
+- `/` - Landing page (always visible, shows "Dashboard" button for authenticated users instead of "Sign In")
 - `/login` - Login/register page
 - `/dashboard` - Admin/client dashboard (authenticated)
 - `/clients` - Admin-only client management with stage filtering (potential/negotiation/active)
@@ -22,6 +22,7 @@ A professional website agency management platform for managing clients, projects
 - `/invoices` - Invoice listing with Stripe Elements payment dialog and recurring invoice support
 - `/messages` - Real-time messaging between admins and clients
 - `/analytics` - Client-only analytics dashboard
+- `/call` - Call us page with phone number (775) 409-5052 and contact info
 
 ## Data Models
 

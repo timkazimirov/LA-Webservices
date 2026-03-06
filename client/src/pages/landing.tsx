@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Globe, Code2, Paintbrush, Rocket, Languages, Infinity, DollarSign, Server,
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus,
-  HelpCircle, ChevronDown, Menu, X
+  HelpCircle, ChevronDown, Menu, X, LayoutDashboard
 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import logoPath from "@assets/la-webservices-logo.svg";
 import screenshotJcbb from "@assets/screenshot-1772753604831.png";
 import screenshotTk from "@assets/screenshot-1772753624879.png";
@@ -257,6 +258,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const navLinks = [
     { href: "#services", label: "Services" },
@@ -288,12 +290,24 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" data-testid="link-nav-login">Sign In</Button>
-            </Link>
-            <Link href="/login">
-              <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-dashboard">
+                    <LayoutDashboard className="w-3 h-3 mr-1.5" />Dashboard
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="hidden sm:inline-flex" data-testid="link-nav-login">Sign In</Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
+                </Link>
+              </>
+            )}
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} data-testid="button-mobile-menu">
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -313,9 +327,15 @@ export default function LandingPage() {
                   {link.label}
                 </a>
               ))}
-              <Link href="/login">
-                <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-signin">Sign In</button>
-              </Link>
+              {isAuthenticated ? (
+                <Link href="/dashboard">
+                  <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-dashboard">Dashboard</button>
+                </Link>
+              ) : (
+                <Link href="/login">
+                  <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-signin">Sign In</button>
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -346,9 +366,9 @@ export default function LandingPage() {
             </FadeIn>
             <FadeIn delay={300}>
               <div className="flex items-center gap-3 flex-wrap">
-                <Link href="/login">
+                <Link href={isAuthenticated ? "/dashboard" : "/login"}>
                   <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-start">
-                    Start Your Project <ArrowRight className="w-4 h-4 ml-2" />
+                    {isAuthenticated ? "Go to Dashboard" : "Start Your Project"} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
                 <a href="#pricing">

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import LandingPage from "@/pages/landing";
+import CallPage from "@/pages/call";
 import Dashboard from "@/pages/dashboard";
 import ClientsPage from "@/pages/clients";
 import ProjectsPage from "@/pages/projects";
@@ -39,7 +40,6 @@ function AuthenticatedLayout() {
             <Switch>
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/login">{() => <Redirect to="/dashboard" />}</Route>
-              <Route path="/">{() => <Redirect to="/dashboard" />}</Route>
               {isAdmin && <Route path="/clients" component={ClientsPage} />}
               {isAdmin && <Route path="/clients/:id" component={ClientsPage} />}
               {isAdmin && <Route path="/requests" component={ProjectRequestsPage} />}
@@ -77,6 +77,7 @@ function AppRouter() {
       <Switch>
         <Route path="/" component={LandingPage} />
         <Route path="/home" component={LandingPage} />
+        <Route path="/call" component={CallPage} />
         <Route path="/login" component={LoginPage} />
         <Route>{() => <Redirect to="/" />}</Route>
       </Switch>
@@ -85,7 +86,9 @@ function AppRouter() {
 
   return (
     <Switch>
+      <Route path="/" component={LandingPage} />
       <Route path="/home" component={LandingPage} />
+      <Route path="/call" component={CallPage} />
       <Route><AuthenticatedLayout /></Route>
     </Switch>
   );
