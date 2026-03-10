@@ -156,13 +156,15 @@ const pricingPlans = [
     period: "/ month",
     description: "Good for small local businesses",
     features: [
-      "Custom website",
+      "Custom designed website",
       "Hosting included",
       "SSL + security",
-      "Mobile optimization",
-      "Contact form",
+      "Mobile responsive design",
+      "Contact form & lead capture",
       "1 small edit / month",
       "Basic analytics",
+      "Google Maps integration",
+      "Social media links",
     ],
   },
   {
@@ -177,6 +179,9 @@ const pricingPlans = [
       "Speed optimization",
       "SEO basics",
       "Priority support",
+      "Blog / news section",
+      "Email newsletter setup",
+      "Monthly performance report",
     ],
     popular: true,
   },
@@ -188,21 +193,24 @@ const pricingPlans = [
     features: [
       "Everything in Growth",
       "Conversion optimization",
-      "Landing pages",
-      "Advanced analytics",
-      "AI chatbot",
+      "Custom landing pages",
+      "Advanced analytics dashboard",
+      "AI chatbot integration",
       "Marketing integrations",
+      "A/B testing",
+      "CRM integration",
+      "Dedicated account manager",
     ],
   },
 ];
 
 const upgrades = [
-  { name: "SEO Management", description: "Keyword targeting, on-page optimization, monthly reports, and local ranking improvements", price: "$300–$700/mo" },
-  { name: "Google Ads Management", description: "Campaign setup, keyword targeting, and optimization. Ad spend not included", price: "$400/mo" },
-  { name: "AI Chatbot / Assistant", description: "Automated customer responses, lead capture, and appointment booking", price: "$79–$129/mo" },
-  { name: "Extra Landing Pages", description: "Additional pages for promotions, seasonal offers, and lead funnels", price: "$50/mo per page" },
-  { name: "E-commerce Upgrade", description: "Product pages, payment integration, and order management", price: "$99–$199/mo" },
-  { name: "Reputation Management", description: "Review monitoring, automated review requests, and reputation dashboard", price: "$99/mo" },
+  { name: "SEO Management", description: "Keyword targeting, on-page optimization, monthly reports, and local ranking improvements", price: "$149–$399/mo" },
+  { name: "Google Ads Management", description: "Campaign setup, keyword targeting, and optimization. Ad spend not included", price: "$199/mo" },
+  { name: "AI Chatbot / Assistant", description: "Automated customer responses, lead capture, and appointment booking", price: "$49–$79/mo" },
+  { name: "Extra Landing Pages", description: "Additional pages for promotions, seasonal offers, and lead funnels", price: "$29/mo per page" },
+  { name: "E-commerce Upgrade", description: "Product pages, payment integration, and order management", price: "$79–$149/mo" },
+  { name: "Reputation Management", description: "Review monitoring, automated review requests, and reputation dashboard", price: "$59/mo" },
 ];
 
 const faqs = [
@@ -573,20 +581,20 @@ export default function LandingPage() {
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pricingPlans.map((plan) => (
-              <Card key={plan.name} className={`transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${plan.popular ? "border-primary relative" : ""}`}>
+              <Card key={plan.name} className={`flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${plan.popular ? "border-primary relative" : ""}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="no-default-active-elevate animate-pulse">Most Popular</Badge>
                   </div>
                 )}
-                <CardContent className="p-6">
+                <CardContent className="p-6 flex flex-col flex-1">
                   <h3 className="font-semibold text-lg mb-1">{plan.name}</h3>
                   <p className="text-xs text-muted-foreground mb-4">{plan.description}</p>
                   <div className="mb-5">
                     <span className="text-3xl font-bold">{plan.price}</span>
-                    <p className="text-xs text-muted-foreground mt-1">{plan.period}</p>
+                    <span className="text-sm text-muted-foreground ml-1">{plan.period}</span>
                   </div>
-                  <div className="space-y-2.5 mb-6">
+                  <div className="space-y-2.5 flex-1">
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
                         <CheckCircle2 className="w-3.5 h-3.5 text-chart-2 shrink-0" />
@@ -594,7 +602,7 @@ export default function LandingPage() {
                       </div>
                     ))}
                   </div>
-                  <Link href="/call">
+                  <Link href="/call" className="mt-6">
                     <Button
                       className="w-full transition-transform duration-200 hover:scale-105"
                       variant={plan.popular ? "default" : "secondary"}
