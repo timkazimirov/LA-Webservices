@@ -152,68 +152,63 @@ const testimonials = [
 const pricingPlans = [
   {
     name: "Starter",
-    price: "$1,000",
-    period: "one-time + $95/mo hosting & maintenance",
-    description: "Perfect for small businesses getting online",
+    price: "$199",
+    period: "/ month",
+    description: "Good for small local businesses",
     features: [
-      "Custom designed website",
-      "Mobile responsive design",
-      "English or Spanish",
-      "Contact form & lead capture",
-      "Basic SEO setup",
-      "Managed hosting included",
-      "Ongoing maintenance",
-      "Content updates",
+      "Custom website",
+      "Hosting included",
+      "SSL + security",
+      "Mobile optimization",
+      "Contact form",
+      "1 small edit / month",
+      "Basic analytics",
     ],
   },
   {
-    name: "Monthly",
-    price: "$0",
-    period: "upfront — $299/mo hosting & maintenance",
-    description: "No upfront cost, everything included monthly",
+    name: "Growth",
+    price: "$299",
+    period: "/ month",
+    description: "Best value for growing businesses",
     features: [
-      "Custom designed website",
-      "Mobile responsive design",
-      "Bilingual (EN + ES)",
-      "Custom widgets",
-      "SEO optimization",
-      "Managed hosting included",
-      "Unlimited edits",
+      "Everything in Starter",
+      "Unlimited small edits",
+      "Google Business optimization",
+      "Speed optimization",
+      "SEO basics",
       "Priority support",
     ],
     popular: true,
   },
   {
-    name: "Custom",
-    price: "Let's Talk",
-    period: "tailored to your project",
-    description: "For businesses with specific needs and goals",
+    name: "Pro",
+    price: "$499",
+    period: "/ month",
+    description: "For businesses actively trying to grow",
     features: [
-      "Fully custom build",
-      "Bilingual (EN + ES)",
-      "Custom integrations & APIs",
-      "E-commerce ready",
-      "Custom native elements",
-      "Dedicated hosting",
-      "Unlimited edits",
-      "Dedicated support",
+      "Everything in Growth",
+      "Conversion optimization",
+      "Landing pages",
+      "Advanced analytics",
+      "AI chatbot",
+      "Marketing integrations",
     ],
   },
 ];
 
 const upgrades = [
-  { name: "Bilingual Add-on", description: "Add full Spanish or English translation to your existing site", price: "+$300 one-time" },
-  { name: "E-commerce Integration", description: "Online store with product listings, cart, and payment processing", price: "+$500 one-time" },
-  { name: "Custom Booking System", description: "Appointment scheduling and reservation management", price: "+$400 one-time" },
-  { name: "Analytics Dashboard", description: "Real-time visitor tracking, traffic reports, and performance insights", price: "+$150 one-time" },
-  { name: "Custom Widgets", description: "Interactive calculators, configurators, or specialized tools", price: "From $200" },
-  { name: "Logo & Brand Design", description: "Professional logo and brand identity package", price: "+$350 one-time" },
+  { name: "SEO Management", description: "Keyword targeting, on-page optimization, monthly reports, and local ranking improvements", price: "$300–$700/mo" },
+  { name: "Google Ads Management", description: "Campaign setup, keyword targeting, and optimization. Ad spend not included", price: "$400/mo" },
+  { name: "AI Chatbot / Assistant", description: "Automated customer responses, lead capture, and appointment booking", price: "$79–$129/mo" },
+  { name: "Extra Landing Pages", description: "Additional pages for promotions, seasonal offers, and lead funnels", price: "$50/mo per page" },
+  { name: "E-commerce Upgrade", description: "Product pages, payment integration, and order management", price: "$99–$199/mo" },
+  { name: "Reputation Management", description: "Review monitoring, automated review requests, and reputation dashboard", price: "$99/mo" },
 ];
 
 const faqs = [
   {
     question: "How much does a website cost in Los Angeles?",
-    answer: "We offer transparent pricing starting at $1,000 one-time plus $95/month for the Starter package, or $0 upfront with $299/month for the all-inclusive Monthly plan. Custom projects are priced based on scope. All plans include managed hosting and maintenance.",
+    answer: "Our plans start at $199/month for Starter, $299/month for Growth (our most popular), and $499/month for Pro. All plans include hosting, SSL, and a custom-built website. No hidden fees, no long-term contracts.",
   },
   {
     question: "Do you build bilingual websites in English and Spanish?",
@@ -275,7 +270,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group" data-testid="link-landing-logo">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
                 <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover" />
               </div>
             </div>
@@ -571,9 +566,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">Pricing</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Core Website Plans</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              No surprise fees. No hidden costs. Pick a plan that fits your business and we'll handle the rest.
+              Simple, transparent monthly pricing. No hidden fees. No long-term contracts.
             </p>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -605,7 +600,7 @@ export default function LandingPage() {
                       variant={plan.popular ? "default" : "secondary"}
                       data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     >
-                      {plan.name === "Custom" ? "Let's Talk" : "Contact Us"} <ChevronRight className="w-3 h-3 ml-1" />
+                      Contact Us <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </CardContent>
@@ -615,8 +610,8 @@ export default function LandingPage() {
 
           <FadeIn className="mt-16">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-bold mb-2">Available Upgrades</h3>
-              <p className="text-sm text-muted-foreground">Add these to any plan to extend your site's capabilities</p>
+              <h3 className="text-xl font-bold mb-2">Add-Ons & Upgrades</h3>
+              <p className="text-sm text-muted-foreground">Boost your results with these powerful additions to any plan</p>
             </div>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
