@@ -49,6 +49,7 @@ A professional website agency management platform for managing clients, projects
 - **Messaging**: Clients automatically see admin contacts; admins see all clients. Real-time polling
 - **SEO**: Comprehensive local SEO for Los Angeles with structured data (JSON-LD), geo-targeting, FAQ section, sitemap, robots.txt
 - **Animations**: Scroll-triggered fade-in animations, staggered grid reveals, hover transitions on landing page
+- **Multi-Language (i18n)**: English/Spanish language toggle on landing page and call page. Uses React context (`client/src/lib/i18n.tsx`) with localStorage persistence. Language switcher button in navbar shows "ES"/"EN" toggle. All public page text is translated.
 
 ## Key Files
 
@@ -62,6 +63,7 @@ A professional website agency management platform for managing clients, projects
 - `client/src/components/app-sidebar.tsx` - Navigation sidebar with pending request badge
 - `client/src/components/stripe-payment.tsx` - Stripe Elements payment form component
 - `client/src/hooks/use-auth.ts` - Authentication hook
+- `client/src/lib/i18n.tsx` - i18n context provider with EN/ES translations for all public pages
 - `client/src/pages/landing.tsx` - Public marketing landing page with SEO and animations
 - `client/src/pages/clients.tsx` - Admin client management with list/profile views
 - `client/src/pages/project-requests.tsx` - Admin project requests management with approve/reject

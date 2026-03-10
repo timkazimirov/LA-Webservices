@@ -9,6 +9,7 @@ import {
   HelpCircle, ChevronDown, Menu, X, LayoutDashboard, Phone
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/lib/i18n";
 import logoPath from "@assets/LA_Webservices_(512_x_512_px)_1773103951810.png";
 import screenshotJcbb from "@assets/screenshot-1772753604831.png";
 import screenshotTk from "@assets/screenshot-1772753624879.png";
@@ -62,183 +63,90 @@ function StaggerGrid({ children, className = "" }: { children: React.ReactNode; 
   );
 }
 
-const services = [
-  {
-    icon: Globe,
-    title: "Custom Websites",
-    description: "Tailored websites built from scratch to match your brand identity and business goals. No templates, no shortcuts.",
-  },
-  {
-    icon: Languages,
-    title: "Bilingual (EN/ES)",
-    description: "Full English and Spanish support built into every project. Reach both markets seamlessly with native-level content.",
-  },
-  {
-    icon: Code2,
-    title: "Custom Widgets",
-    description: "Interactive components, booking systems, calculators, and tools designed specifically for your business needs.",
-  },
-  {
-    icon: Palette,
-    title: "Native Web Elements",
-    description: "Hand-crafted UI components using modern web standards. Fast, accessible, and built to last.",
-  },
-  {
-    icon: Rocket,
-    title: "Drive More Customers",
-    description: "SEO-optimized, conversion-focused design that turns visitors into paying customers from day one.",
-  },
-  {
-    icon: Infinity,
-    title: "Unlimited Editing",
-    description: "Need a change? We handle it. Unlimited content updates and design tweaks included with every plan.",
-  },
-  {
-    icon: DollarSign,
-    title: "Fair Pricing",
-    description: "Transparent, honest pricing with no hidden fees. You know exactly what you're paying for before we start.",
-  },
-  {
-    icon: Server,
-    title: "Managed Hosting",
-    description: "Fast, secure hosting included. We handle uptime, SSL certificates, backups, and performance so you don't have to.",
-  },
-];
+function useTranslatedData() {
+  const { t } = useI18n();
 
-const differentiators = [
-  {
-    title: "Small Local Team",
-    description: "Work directly with the people building your site. No ticket systems, no waiting in queues, no getting passed around.",
-    icon: Users,
-  },
-  {
-    title: "Not Another Template",
-    description: "Every site is built from the ground up. Your business is unique and your website should be too.",
-    icon: Paintbrush,
-  },
-  {
-    title: "Lightning Fast",
-    description: "Optimized code, fast hosting, and modern architecture mean your site loads in under 2 seconds.",
-    icon: Zap,
-  },
-  {
-    title: "Built to Scale",
-    description: "Start small, grow big. Our architecture scales with your business without costly rebuilds.",
-    icon: Shield,
-  },
-];
+  const services = [
+    { icon: Globe, title: t("svc.customWebsites"), description: t("svc.customWebsitesDesc") },
+    { icon: Languages, title: t("svc.bilingual"), description: t("svc.bilingualDesc") },
+    { icon: Code2, title: t("svc.customWidgets"), description: t("svc.customWidgetsDesc") },
+    { icon: Palette, title: t("svc.nativeElements"), description: t("svc.nativeElementsDesc") },
+    { icon: Rocket, title: t("svc.driveCustomers"), description: t("svc.driveCustomersDesc") },
+    { icon: Infinity, title: t("svc.unlimitedEditing"), description: t("svc.unlimitedEditingDesc") },
+    { icon: DollarSign, title: t("svc.fairPricing"), description: t("svc.fairPricingDesc") },
+    { icon: Server, title: t("svc.managedHosting"), description: t("svc.managedHostingDesc") },
+  ];
 
-const testimonials = [
-  {
-    name: "Maria G.",
-    company: "Local Restaurant Owner",
-    text: "They built our bilingual website and online ordering system. Our Spanish-speaking customers finally feel at home, and our orders went up 40% in the first month.",
-    rating: 5,
-  },
-  {
-    name: "David R.",
-    company: "Home Services Business",
-    text: "Working with a local team that actually picks up the phone makes all the difference. They built us a booking system that handles everything and the site has never gone down.",
-    rating: 5,
-  },
-  {
-    name: "Lisa M.",
-    company: "Boutique Shop Owner",
-    text: "The custom storefront they built for us replaced three different tools we were paying for. Simple, clean, and our customers love it. Best investment we made.",
-    rating: 5,
-  },
-];
+  const differentiators = [
+    { title: t("why.smallTeam"), description: t("why.smallTeamDesc"), icon: Users },
+    { title: t("why.notTemplate"), description: t("why.notTemplateDesc"), icon: Paintbrush },
+    { title: t("why.fast"), description: t("why.fastDesc"), icon: Zap },
+    { title: t("why.scale"), description: t("why.scaleDesc"), icon: Shield },
+  ];
 
-const pricingPlans = [
-  {
-    name: "Starter",
-    price: "$199",
-    period: "/ month",
-    description: "Good for small local businesses",
-    features: [
-      "Custom designed website",
-      "Hosting included",
-      "SSL + security",
-      "Mobile responsive design",
-      "Contact form & lead capture",
-      "1 small edit / month",
-      "Basic analytics",
-      "Google Maps integration",
-      "Social media links",
-    ],
-  },
-  {
-    name: "Growth",
-    price: "$299",
-    period: "/ month",
-    description: "Best value for growing businesses",
-    features: [
-      "Everything in Starter",
-      "Unlimited small edits",
-      "Google Business optimization",
-      "Speed optimization",
-      "SEO basics",
-      "Priority support",
-      "Blog / news section",
-      "Email newsletter setup",
-      "Monthly performance report",
-    ],
-    popular: true,
-  },
-  {
-    name: "Pro",
-    price: "$499",
-    period: "/ month",
-    description: "For businesses actively trying to grow",
-    features: [
-      "Everything in Growth",
-      "Conversion optimization",
-      "Custom landing pages",
-      "Advanced analytics dashboard",
-      "AI chatbot integration",
-      "Marketing integrations",
-      "A/B testing",
-      "CRM integration",
-      "Dedicated account manager",
-    ],
-  },
-];
+  const testimonials = [
+    { name: t("testimonial.1.name"), company: t("testimonial.1.company"), text: t("testimonial.1.text"), rating: 5 },
+    { name: t("testimonial.2.name"), company: t("testimonial.2.company"), text: t("testimonial.2.text"), rating: 5 },
+    { name: t("testimonial.3.name"), company: t("testimonial.3.company"), text: t("testimonial.3.text"), rating: 5 },
+  ];
 
-const upgrades = [
-  { name: "SEO Management", description: "Keyword targeting, on-page optimization, monthly reports, and local ranking improvements", price: "$149–$399/mo" },
-  { name: "Google Ads Management", description: "Campaign setup, keyword targeting, and optimization. Ad spend not included", price: "$199/mo" },
-  { name: "AI Chatbot / Assistant", description: "Automated customer responses, lead capture, and appointment booking", price: "$49–$79/mo" },
-  { name: "Extra Landing Pages", description: "Additional pages for promotions, seasonal offers, and lead funnels", price: "$29/mo per page" },
-  { name: "E-commerce Upgrade", description: "Product pages, payment integration, and order management", price: "$79–$149/mo" },
-  { name: "Reputation Management", description: "Review monitoring, automated review requests, and reputation dashboard", price: "$59/mo" },
-];
+  const pricingPlans = [
+    {
+      name: t("pricing.starter"),
+      price: "$199",
+      period: t("pricing.perMonth"),
+      description: t("pricing.starterDesc"),
+      features: [
+        t("pricing.feat.customWebsite"), t("pricing.feat.hosting"), t("pricing.feat.ssl"),
+        t("pricing.feat.mobileResponsive"), t("pricing.feat.contactForm"), t("pricing.feat.oneEdit"),
+        t("pricing.feat.basicAnalytics"), t("pricing.feat.googleMaps"), t("pricing.feat.socialMedia"),
+      ],
+    },
+    {
+      name: t("pricing.growth"),
+      price: "$299",
+      period: t("pricing.perMonth"),
+      description: t("pricing.growthDesc"),
+      features: [
+        t("pricing.feat.everythingStarter"), t("pricing.feat.unlimitedEdits"), t("pricing.feat.googleBusiness"),
+        t("pricing.feat.speedOpt"), t("pricing.feat.seoBasics"), t("pricing.feat.prioritySupport"),
+        t("pricing.feat.blog"), t("pricing.feat.newsletter"), t("pricing.feat.monthlyReport"),
+      ],
+      popular: true,
+    },
+    {
+      name: t("pricing.pro"),
+      price: "$499",
+      period: t("pricing.perMonth"),
+      description: t("pricing.proDesc"),
+      features: [
+        t("pricing.feat.everythingGrowth"), t("pricing.feat.conversionOpt"), t("pricing.feat.landingPages"),
+        t("pricing.feat.advancedAnalytics"), t("pricing.feat.aiChatbot"), t("pricing.feat.marketingIntegrations"),
+        t("pricing.feat.abTesting"), t("pricing.feat.crm"), t("pricing.feat.accountManager"),
+      ],
+    },
+  ];
 
-const faqs = [
-  {
-    question: "How much does a website cost in Los Angeles?",
-    answer: "Our plans start at $199/month for Starter, $299/month for Growth (our most popular), and $499/month for Pro. All plans include hosting, SSL, and a custom-built website. No hidden fees, no long-term contracts.",
-  },
-  {
-    question: "Do you build bilingual websites in English and Spanish?",
-    answer: "Yes! Every website we build can be fully bilingual in English and Spanish. We create native-level content in both languages to help you reach English and Spanish-speaking customers in Los Angeles and beyond.",
-  },
-  {
-    question: "How long does it take to build a website?",
-    answer: "Most websites are delivered within a week. Custom projects with advanced features may take a bit longer depending on scope. We provide regular updates throughout the process and you can communicate directly with your development team.",
-  },
-  {
-    question: "Do you provide website hosting?",
-    answer: "Yes, managed hosting is included with every plan. We handle uptime monitoring, SSL certificates, backups, and performance optimization so you don't have to worry about any technical details.",
-  },
-  {
-    question: "Can I make changes to my website after it's built?",
-    answer: "Absolutely! All our plans include content updates. Our Monthly plan includes unlimited edits at no extra cost. Just tell us what you need changed and we'll handle it, usually same-day.",
-  },
-  {
-    question: "Do you work with businesses outside of Los Angeles?",
-    answer: "While we're based in LA and most of our clients are local businesses in the greater Los Angeles area, we work with businesses across Southern California and beyond. Our client portal makes remote collaboration seamless.",
-  },
-];
+  const upgrades = [
+    { name: t("addon.seo"), description: t("addon.seoDesc"), price: t("addon.seoPrice") },
+    { name: t("addon.ads"), description: t("addon.adsDesc"), price: t("addon.adsPrice") },
+    { name: t("addon.chatbot"), description: t("addon.chatbotDesc"), price: t("addon.chatbotPrice") },
+    { name: t("addon.landing"), description: t("addon.landingDesc"), price: t("addon.landingPrice") },
+    { name: t("addon.ecommerce"), description: t("addon.ecommerceDesc"), price: t("addon.ecommercePrice") },
+    { name: t("addon.reputation"), description: t("addon.reputationDesc"), price: t("addon.reputationPrice") },
+  ];
+
+  const faqs = [
+    { question: t("faq.q1"), answer: t("faq.a1") },
+    { question: t("faq.q2"), answer: t("faq.a2") },
+    { question: t("faq.q3"), answer: t("faq.a3") },
+    { question: t("faq.q4"), answer: t("faq.a4") },
+    { question: t("faq.q5"), answer: t("faq.a5") },
+    { question: t("faq.q6"), answer: t("faq.a6") },
+  ];
+
+  return { services, differentiators, testimonials, pricingPlans, upgrades, faqs };
+}
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
@@ -259,17 +167,35 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
+function LanguageToggle() {
+  const { lang, setLang } = useI18n();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setLang(lang === "en" ? "es" : "en")}
+      className="text-xs font-medium gap-1.5 px-2"
+      data-testid="button-lang-toggle"
+    >
+      <Languages className="w-3.5 h-3.5" />
+      {lang === "en" ? "ES" : "EN"}
+    </Button>
+  );
+}
+
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { t } = useI18n();
+  const { services, differentiators, testimonials, pricingPlans, upgrades, faqs } = useTranslatedData();
 
   const navLinks = [
-    { href: "#services", label: "Services" },
-    { href: "#why-us", label: "Why Us" },
-    { href: "#our-work", label: "Our Work" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#testimonials", label: "Testimonials" },
-    { href: "#faq", label: "FAQ" },
+    { href: "#services", label: t("nav.services"), id: "services" },
+    { href: "#why-us", label: t("nav.whyUs"), id: "why-us" },
+    { href: "#our-work", label: t("nav.ourWork"), id: "our-work" },
+    { href: "#pricing", label: t("nav.pricing"), id: "pricing" },
+    { href: "#testimonials", label: t("nav.testimonials"), id: "testimonials" },
+    { href: "#faq", label: t("nav.faq"), id: "faq" },
   ];
 
   return (
@@ -285,20 +211,21 @@ export default function LandingPage() {
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}>{link.label}</a>
+              <a key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200" data-testid={`link-nav-${link.id}`}>{link.label}</a>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <LanguageToggle />
             {isAuthenticated && (
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs sm:text-sm" data-testid="link-nav-dashboard">
-                  <LayoutDashboard className="w-3 h-3 mr-1.5" />Dashboard
+                  <LayoutDashboard className="w-3 h-3 mr-1.5" />{t("nav.dashboard")}
                 </Button>
               </Link>
             )}
             <Link href="/call">
               <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-contact">
-                <Phone className="w-3 h-3 mr-1.5" />Contact Us
+                <Phone className="w-3 h-3 mr-1.5" />{t("nav.contactUs")}
               </Button>
             </Link>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} data-testid="button-mobile-menu">
@@ -315,18 +242,18 @@ export default function LandingPage() {
                   href={link.href}
                   className="block px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
-                  data-testid={`link-mobile-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                  data-testid={`link-mobile-nav-${link.id}`}
                 >
                   {link.label}
                 </a>
               ))}
               {isAuthenticated && (
                 <Link href="/dashboard">
-                  <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-dashboard">Dashboard</button>
+                  <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-dashboard">{t("nav.dashboard")}</button>
                 </Link>
               )}
               <Link href="/call">
-                <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-contact">Contact Us</button>
+                <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-contact">{t("nav.contactUs")}</button>
               </Link>
             </div>
           </div>
@@ -339,40 +266,38 @@ export default function LandingPage() {
           <div className="max-w-3xl">
             <FadeIn>
               <Badge variant="secondary" className="mb-6 no-default-active-elevate">
-                <Zap className="w-3 h-3 mr-1" /> Small team. Big results.
+                <Zap className="w-3 h-3 mr-1" /> {t("hero.badge")}
               </Badge>
             </FadeIn>
             <FadeIn delay={100}>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-4 sm:mb-6">
-                Websites that actually
+                {t("hero.title1")}
                 <br />
-                <span className="text-primary">work for your business</span>
+                <span className="text-primary">{t("hero.title2")}</span>
               </h1>
             </FadeIn>
             <FadeIn delay={200}>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed mb-6 sm:mb-8 max-w-2xl">
-                We're a small Los Angeles web design team that builds custom websites in English and Spanish.
-                No offshore teams. No cookie-cutter templates. No overpriced LA agencies.
-                Just clean, fast websites that bring your local business more customers.
+                {t("hero.desc")}
               </p>
             </FadeIn>
             <FadeIn delay={300}>
               <div className="flex items-center gap-3 flex-wrap">
                 <Link href="/call">
                   <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-contact">
-                    <Phone className="w-4 h-4 mr-2" /> Contact Us
+                    <Phone className="w-4 h-4 mr-2" /> {t("hero.cta")}
                   </Button>
                 </Link>
                 <a href="#pricing">
                   <Button size="lg" variant="secondary" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-pricing">
-                    View Pricing
+                    {t("hero.pricing")}
                   </Button>
                 </a>
               </div>
               <div className="mt-4">
                 <Link href="/login">
                   <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer" data-testid="link-hero-signin">
-                    Already have an active project? <span className="underline font-medium">Sign in here</span>
+                    {t("hero.signin")} <span className="underline font-medium">{t("hero.signinLink")}</span>
                   </span>
                 </Link>
               </div>
@@ -381,19 +306,19 @@ export default function LandingPage() {
               <div className="flex items-center gap-6 mt-10 text-sm text-muted-foreground flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                  <span>Bilingual EN/ES</span>
+                  <span>{t("hero.check1")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                  <span>Unlimited edits</span>
+                  <span>{t("hero.check2")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                  <span>Hosting included</span>
+                  <span>{t("hero.check3")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-chart-2" />
-                  <span>Fair pricing</span>
+                  <span>{t("hero.check4")}</span>
                 </div>
               </div>
             </FadeIn>
@@ -416,9 +341,9 @@ export default function LandingPage() {
               <div className="absolute -bottom-6 -left-6 w-48 h-32 rounded-lg bg-card border border-card-border p-3 -rotate-6 shadow-lg transition-transform duration-500 hover:rotate-0 hover:scale-105">
                 <div className="flex items-center gap-2 mb-2">
                   <Monitor className="w-3 h-3 text-primary" />
-                  <span className="text-[10px] font-medium">Desktop</span>
+                  <span className="text-[10px] font-medium">{t("hero.desktop")}</span>
                   <Smartphone className="w-3 h-3 text-chart-2 ml-2" />
-                  <span className="text-[10px] font-medium">Mobile</span>
+                  <span className="text-[10px] font-medium">{t("hero.mobile")}</span>
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1 h-16 rounded bg-primary/10 flex items-center justify-center">
@@ -437,10 +362,10 @@ export default function LandingPage() {
       <section id="services" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
-            <Badge variant="secondary" className="mb-4 no-default-active-elevate">What we do</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything your business website needs</h2>
+            <Badge variant="secondary" className="mb-4 no-default-active-elevate">{t("services.badge")}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("services.title")}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              From design to deployment, we handle every aspect of your web presence so you can focus on running your business.
+              {t("services.desc")}
             </p>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -464,26 +389,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <FadeIn>
-                <Badge variant="secondary" className="mb-4 no-default-active-elevate">Why choose us</Badge>
+                <Badge variant="secondary" className="mb-4 no-default-active-elevate">{t("why.badge")}</Badge>
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Skip the headaches.<br />Work with people who care.
+                  {t("why.title1")}<br />{t("why.title2")}
                 </h2>
               </FadeIn>
               <FadeIn delay={100}>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  We're not a faceless corporation or an overseas outsourcing shop. We're a small, skilled team right here
-                  in your community. When you call, a real person answers. When you need a change, it happens fast.
-                  Your success is our success.
+                  {t("why.desc")}
                 </p>
               </FadeIn>
               <FadeIn delay={200}>
                 <div className="space-y-3 mb-6">
-                  {[
-                    "Direct communication with your development team",
-                    "Same-day response on all requests",
-                    "No contracts with hidden clauses or surprise fees",
-                    "Your website, your data, your ownership",
-                  ].map((item, i) => (
+                  {[t("why.check1"), t("why.check2"), t("why.check3"), t("why.check4")].map((item, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
                       <CheckCircle2 className="w-4 h-4 text-chart-2 mt-0.5 shrink-0" />
                       <span>{item}</span>
@@ -512,10 +430,10 @@ export default function LandingPage() {
       <section id="our-work" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
-            <Badge variant="secondary" className="mb-4 no-default-active-elevate">Our Work</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Projects we've built</h2>
+            <Badge variant="secondary" className="mb-4 no-default-active-elevate">{t("work.badge")}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("work.title")}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Real websites for real businesses. Every project is custom-built to match the client's brand and goals.
+              {t("work.desc")}
             </p>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -525,9 +443,9 @@ export default function LandingPage() {
                   <img src={screenshotJcbb} alt="JCBB Construction website" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <CardContent className="p-5">
-                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Construction</Badge>
-                  <h3 className="font-semibold text-sm mb-1">JCBB Construction</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">Bilingual contractor website with project gallery, service pages, and lead capture. Built for LA local SEO with full English/Spanish support.</p>
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">{t("work.jcbb.tag")}</Badge>
+                  <h3 className="font-semibold text-sm mb-1">{t("work.jcbb.title")}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{t("work.jcbb.desc")}</p>
                   <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
                     <Globe className="w-3 h-3" />jcbbconstruction.com
                   </p>
@@ -541,9 +459,9 @@ export default function LandingPage() {
                   <img src={screenshotTk} alt="Timothy Kazimirov personal website" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <CardContent className="p-5">
-                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Personal</Badge>
-                  <h3 className="font-semibold text-sm mb-1">Timothy Kazimirov</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">Clean, modern personal website with portfolio, blog, and live data integrations. Custom design with commodity ticker and project showcases.</p>
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">{t("work.tk.tag")}</Badge>
+                  <h3 className="font-semibold text-sm mb-1">{t("work.tk.title")}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{t("work.tk.desc")}</p>
                   <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
                     <Globe className="w-3 h-3" />timkazimirov.com
                   </p>
@@ -557,9 +475,9 @@ export default function LandingPage() {
                   <img src={screenshotMining} alt="Mining Risk Modeler web app" className="w-full h-full object-cover object-top transform group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <CardContent className="p-5">
-                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">Financial</Badge>
-                  <h3 className="font-semibold text-sm mb-1">Mining Risk Modeler</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">Full-stack financial analytics platform with interactive risk heatmaps, jurisdiction rankings, AI analyst, and rate calculators.</p>
+                  <Badge variant="secondary" className="mb-2 text-[10px] no-default-active-elevate">{t("work.mining.tag")}</Badge>
+                  <h3 className="font-semibold text-sm mb-1">{t("work.mining.title")}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{t("work.mining.desc")}</p>
                   <p className="text-xs text-primary mt-2 flex items-center gap-1 group-hover:underline">
                     <Globe className="w-3 h-3" />miningriskmodeler.com
                   </p>
@@ -573,10 +491,10 @@ export default function LandingPage() {
       <section id="pricing" className="py-12 sm:py-16 md:py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
-            <Badge variant="secondary" className="mb-4 no-default-active-elevate">Pricing</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Core Website Plans</h2>
+            <Badge variant="secondary" className="mb-4 no-default-active-elevate">{t("pricing.badge")}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("pricing.title")}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Simple, transparent monthly pricing. No hidden fees. No long-term contracts.
+              {t("pricing.desc")}
             </p>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -584,7 +502,7 @@ export default function LandingPage() {
               <Card key={plan.name} className={`flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${plan.popular ? "border-primary relative" : ""}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="no-default-active-elevate animate-pulse">Most Popular</Badge>
+                    <Badge className="no-default-active-elevate animate-pulse">{t("pricing.mostPopular")}</Badge>
                   </div>
                 )}
                 <CardContent className="p-6 flex flex-col flex-1">
@@ -608,7 +526,7 @@ export default function LandingPage() {
                       variant={plan.popular ? "default" : "secondary"}
                       data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     >
-                      Contact Us <ChevronRight className="w-3 h-3 ml-1" />
+                      {t("pricing.contactUs")} <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </CardContent>
@@ -618,8 +536,8 @@ export default function LandingPage() {
 
           <FadeIn className="mt-16">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-bold mb-2">Add-Ons & Upgrades</h3>
-              <p className="text-sm text-muted-foreground">Boost your results with these powerful additions to any plan</p>
+              <h3 className="text-xl font-bold mb-2">{t("pricing.addons")}</h3>
+              <p className="text-sm text-muted-foreground">{t("pricing.addonsDesc")}</p>
             </div>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -646,22 +564,22 @@ export default function LandingPage() {
       <section id="testimonials" className="py-12 sm:py-16 md:py-20 bg-card/50 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-14">
-            <Badge variant="secondary" className="mb-4 no-default-active-elevate">Testimonials</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What our clients say</h2>
+            <Badge variant="secondary" className="mb-4 no-default-active-elevate">{t("testimonials.badge")}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("testimonials.title")}</h2>
           </FadeIn>
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <Card key={t.name} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
+            {testimonials.map((tl) => (
+              <Card key={tl.name} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-default">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-0.5 mb-4">
-                    {Array.from({ length: t.rating }).map((_, i) => (
+                    {Array.from({ length: tl.rating }).map((_, i) => (
                       <Star key={i} className="w-3.5 h-3.5 fill-chart-4 text-chart-4" />
                     ))}
                   </div>
-                  <p className="text-sm leading-relaxed mb-4">"{t.text}"</p>
+                  <p className="text-sm leading-relaxed mb-4">"{tl.text}"</p>
                   <div>
-                    <p className="text-sm font-medium">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.company}</p>
+                    <p className="text-sm font-medium">{tl.name}</p>
+                    <p className="text-xs text-muted-foreground">{tl.company}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -674,11 +592,11 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center mb-10">
             <Badge variant="secondary" className="mb-4 no-default-active-elevate">
-              <HelpCircle className="w-3 h-3 mr-1" /> FAQ
+              <HelpCircle className="w-3 h-3 mr-1" /> {t("faq.badge")}
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently asked questions</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("faq.title")}</h2>
             <p className="text-muted-foreground">
-              Common questions about our web design services in Los Angeles.
+              {t("faq.desc")}
             </p>
           </FadeIn>
           <FadeIn delay={100}>
@@ -695,22 +613,21 @@ export default function LandingPage() {
 
       <section className="py-12 sm:py-16 md:py-20 border-t border-border/50">
         <FadeIn className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build something great?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("cta.title")}</h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-            Let's talk about your project. No pressure, no obligations. Just a conversation about what you need
-            and how we can help.
+            {t("cta.desc")}
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link href="/call">
               <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-cta-contact">
-                <Phone className="w-4 h-4 mr-2" /> Get in Touch
+                <Phone className="w-4 h-4 mr-2" /> {t("cta.button")}
               </Button>
             </Link>
           </div>
           <div className="mt-4">
             <Link href="/login">
               <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer" data-testid="link-cta-signin">
-                Already have an active project? <span className="underline font-medium">Sign in here</span>
+                {t("hero.signin")} <span className="underline font-medium">{t("hero.signinLink")}</span>
               </span>
             </Link>
           </div>
@@ -728,37 +645,37 @@ export default function LandingPage() {
                 <span className="font-bold text-sm">LA Webservices</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Custom bilingual web design and development for small businesses in Los Angeles, California.
+                {t("footer.bilingualDesc")}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Services</h4>
+              <h4 className="font-semibold text-sm mb-3">{t("footer.services")}</h4>
               <ul className="space-y-1.5 text-xs text-muted-foreground">
-                <li><a href="#services" className="hover:text-foreground transition-colors">Custom Web Design</a></li>
-                <li><a href="#services" className="hover:text-foreground transition-colors">Bilingual Websites (EN/ES)</a></li>
-                <li><a href="#services" className="hover:text-foreground transition-colors">Custom Widgets & Apps</a></li>
-                <li><a href="#services" className="hover:text-foreground transition-colors">SEO Optimization</a></li>
-                <li><a href="#services" className="hover:text-foreground transition-colors">Managed Hosting</a></li>
+                <li><a href="#services" className="hover:text-foreground transition-colors">{t("footer.customWebDesign")}</a></li>
+                <li><a href="#services" className="hover:text-foreground transition-colors">{t("footer.bilingualWebsites")}</a></li>
+                <li><a href="#services" className="hover:text-foreground transition-colors">{t("footer.customWidgets")}</a></li>
+                <li><a href="#services" className="hover:text-foreground transition-colors">{t("footer.seoOptimization")}</a></li>
+                <li><a href="#services" className="hover:text-foreground transition-colors">{t("footer.managedHosting")}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Areas We Serve</h4>
+              <h4 className="font-semibold text-sm mb-3">{t("footer.areasTitle")}</h4>
               <ul className="space-y-1.5 text-xs text-muted-foreground">
-                <li>Los Angeles, CA</li>
-                <li>Hollywood & West Hollywood</li>
-                <li>Santa Monica & Venice</li>
-                <li>Downtown LA & East LA</li>
-                <li>San Fernando Valley</li>
-                <li>Long Beach & South Bay</li>
+                <li>{t("footer.area1")}</li>
+                <li>{t("footer.area2")}</li>
+                <li>{t("footer.area3")}</li>
+                <li>{t("footer.area4")}</li>
+                <li>{t("footer.area5")}</li>
+                <li>{t("footer.area6")}</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-border pt-6 flex items-center justify-between flex-wrap gap-4">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} LA Webservices. Web design agency in Los Angeles, CA.
+              &copy; {new Date().getFullYear()} {t("footer.copyright")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Built with care by a small team that loves the web.
+              {t("footer.tagline")}
             </p>
           </div>
         </div>
