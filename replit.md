@@ -96,5 +96,5 @@ Flow: Client clicks "Pay Now" on invoice -> PaymentIntent created server-side ->
 ## Branding
 
 - Name: LA Webservices
-- Logo: attached_assets/la-webservices-logo.svg (SVG, used on landing page, login page, footer only - NOT in sidebar). PNG version also exists at attached_assets/la-webservices-logo.png
-- Sidebar uses text "LA" badge instead of logo image
+- Logo: Uses PNG logo files everywhere — `LA_Webservices_(512_x_512_px)_1773103951810.png` (landing, login, call pages) and `LA_Webservices_(180_x_180_px)_1773103951809.png` (sidebar). Old SVG logo is no longer used.
+- Landing page CTAs are "Contact Us" focused, directing to /call page. "Already have an active project? Sign in here" links below CTAs for existing clients.

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import logoPath from "@assets/LA_Webservices_(180_x_180_px)_1773103951809.png";
 
 const adminItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -52,8 +53,8 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard">
           <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home">
-            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">LA</span>
+            <div className="w-8 h-8 rounded-md overflow-hidden shrink-0">
+              <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-sm font-semibold tracking-tight">LA Webservices</h1>

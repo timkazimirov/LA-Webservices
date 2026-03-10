@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, ArrowLeft, Clock, MapPin } from "lucide-react";
 import { Link } from "wouter";
-import logoPath from "@assets/la-webservices-logo.svg";
+import logoPath from "@assets/LA_Webservices_(512_x_512_px)_1773103951810.png";
 
 export default function CallPage() {
   return (

@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   Globe, Code2, Paintbrush, Rocket, Languages, Infinity, DollarSign, Server,
   ArrowRight, CheckCircle2, Users, Zap, Shield, Star, ChevronRight, Monitor, Smartphone, Palette, Plus,
-  HelpCircle, ChevronDown, Menu, X, LayoutDashboard
+  HelpCircle, ChevronDown, Menu, X, LayoutDashboard, Phone
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import logoPath from "@assets/la-webservices-logo.svg";
+import logoPath from "@assets/LA_Webservices_(512_x_512_px)_1773103951810.png";
 import screenshotJcbb from "@assets/screenshot-1772753604831.png";
 import screenshotTk from "@assets/screenshot-1772753624879.png";
 import screenshotMining from "@assets/screenshot-1772753687145.png";
@@ -276,7 +276,7 @@ export default function LandingPage() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group" data-testid="link-landing-logo">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
-                <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
+                <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover" />
               </div>
               <div>
                 <span className="font-bold text-sm tracking-tight">LA</span>
@@ -290,24 +290,18 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <>
-                <Link href="/dashboard">
-                  <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-dashboard">
-                    <LayoutDashboard className="w-3 h-3 mr-1.5" />Dashboard
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="hidden sm:inline-flex" data-testid="link-nav-login">Sign In</Button>
-                </Link>
-                <Link href="/login">
-                  <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-get-started">Get Started <ArrowRight className="w-3 h-3 ml-1" /></Button>
-                </Link>
-              </>
+            {isAuthenticated && (
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs sm:text-sm" data-testid="link-nav-dashboard">
+                  <LayoutDashboard className="w-3 h-3 mr-1.5" />Dashboard
+                </Button>
+              </Link>
             )}
+            <Link href="/call">
+              <Button size="sm" className="transition-transform duration-200 hover:scale-105 text-xs sm:text-sm" data-testid="link-nav-contact">
+                <Phone className="w-3 h-3 mr-1.5" />Contact Us
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} data-testid="button-mobile-menu">
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -327,15 +321,14 @@ export default function LandingPage() {
                   {link.label}
                 </a>
               ))}
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <Link href="/dashboard">
                   <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-dashboard">Dashboard</button>
                 </Link>
-              ) : (
-                <Link href="/login">
-                  <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-signin">Sign In</button>
-                </Link>
               )}
+              <Link href="/call">
+                <button className="block w-full text-left px-3 py-2.5 rounded-md text-sm text-primary font-medium sm:hidden" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-nav-contact">Contact Us</button>
+              </Link>
             </div>
           </div>
         )}
@@ -366,9 +359,9 @@ export default function LandingPage() {
             </FadeIn>
             <FadeIn delay={300}>
               <div className="flex items-center gap-3 flex-wrap">
-                <Link href={isAuthenticated ? "/dashboard" : "/login"}>
-                  <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-start">
-                    {isAuthenticated ? "Go to Dashboard" : "Start Your Project"} <ArrowRight className="w-4 h-4 ml-2" />
+                <Link href="/call">
+                  <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-hero-contact">
+                    <Phone className="w-4 h-4 mr-2" /> Contact Us
                   </Button>
                 </Link>
                 <a href="#pricing">
@@ -376,6 +369,13 @@ export default function LandingPage() {
                     View Pricing
                   </Button>
                 </a>
+              </div>
+              <div className="mt-4">
+                <Link href="/login">
+                  <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer" data-testid="link-hero-signin">
+                    Already have an active project? <span className="underline font-medium">Sign in here</span>
+                  </span>
+                </Link>
               </div>
             </FadeIn>
             <FadeIn delay={400}>
@@ -603,13 +603,13 @@ export default function LandingPage() {
                       </div>
                     ))}
                   </div>
-                  <Link href="/login">
+                  <Link href="/call">
                     <Button
                       className="w-full transition-transform duration-200 hover:scale-105"
                       variant={plan.popular ? "default" : "secondary"}
                       data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     >
-                      {plan.name === "Custom" ? "Contact Us" : "Get Started"} <ChevronRight className="w-3 h-3 ml-1" />
+                      {plan.name === "Custom" ? "Let's Talk" : "Contact Us"} <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </CardContent>
@@ -702,10 +702,17 @@ export default function LandingPage() {
             and how we can help.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Link href="/login">
-              <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-cta-start">
-                Start Your Project <ArrowRight className="w-4 h-4 ml-2" />
+            <Link href="/call">
+              <Button size="lg" className="transition-transform duration-200 hover:scale-105" data-testid="button-cta-contact">
+                <Phone className="w-4 h-4 mr-2" /> Get in Touch
               </Button>
+            </Link>
+          </div>
+          <div className="mt-4">
+            <Link href="/login">
+              <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer" data-testid="link-cta-signin">
+                Already have an active project? <span className="underline font-medium">Sign in here</span>
+              </span>
             </Link>
           </div>
         </FadeIn>
@@ -717,7 +724,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
-                  <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover scale-[1.8]" />
+                  <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-bold text-sm">LA Webservices</span>
               </div>
