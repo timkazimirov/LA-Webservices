@@ -275,12 +275,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group" data-testid="link-landing-logo">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-110">
                 <img src={logoPath} alt="LA Webservices" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <span className="font-bold text-sm tracking-tight">LA</span>
-                <span className="text-[10px] text-muted-foreground ml-1 tracking-widest uppercase">Webservices</span>
               </div>
             </div>
           </Link>
